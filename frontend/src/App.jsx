@@ -1,14 +1,13 @@
-export default function App() {
+// App.jsx — root component, wraps everything in AuthProvider
+import { AuthProvider } from "./context/AuthContext";
+import AppRouter from "./router/AppRouter";
+
+const App = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Booking Management System
-        </h1>
-        <p className="text-lg text-gray-600">
-          React frontend is successfully initialized.
-        </p>
-      </div>
-    </div>
-  )
-}
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
+  );
+};
+
+export default App;
