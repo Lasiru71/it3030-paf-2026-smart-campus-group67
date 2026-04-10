@@ -70,17 +70,7 @@ The application consists of a React-based frontend and a Spring Boot REST API ba
 4. App will run on:
    http://localhost:3000
 
----
 
-#System Evidence
-
-* Screenshots of UI (Login, Booking, Tickets, Dashboard)
-* API testing (Postman)
-* OAuth login demonstration
-
-(Add screenshots inside a /docs folder in the repository)
-
----
 
 #Notes
 
