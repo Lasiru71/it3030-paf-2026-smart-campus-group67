@@ -103,7 +103,7 @@ const Navbar = () => {
                 <Button variant="ghost" onClick={() => navigate(ROUTES.LOGIN)}>
                   Login
                 </Button>
-                <Button onClick={() => navigate(ROUTES.SIGNUP)}>
+                <Button className="bg-blue-800 hover:bg-blue-900" onClick={() => navigate(ROUTES.SIGNUP)}>
                   Get Started
                 </Button>
               </>
@@ -153,7 +153,7 @@ const Navbar = () => {
                 <Button variant="ghost" fullWidth onClick={() => { navigate(ROUTES.LOGIN); setMobileOpen(false); }}>
                   Login
                 </Button>
-                <Button fullWidth onClick={() => { navigate(ROUTES.SIGNUP); setMobileOpen(false); }}>
+                <Button fullWidth className="bg-blue-800 hover:bg-blue-900" onClick={() => { navigate(ROUTES.SIGNUP); setMobileOpen(false); }}>
                   Get Started
                 </Button>
               </>

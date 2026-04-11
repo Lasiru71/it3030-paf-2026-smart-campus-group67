@@ -4,6 +4,7 @@ import { ArrowRight, CalendarCheck } from "lucide-react";
 import Button from "../../components/common/Button";
 import { useAuth } from "../../context/AuthContext";
 import { ROUTES } from "../../utils/constants";
+import React from 'react';
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -29,7 +30,8 @@ const HeroSection = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button
-            className="text-base px-7 py-3 bg-white text-blue-700 hover:bg-slate-100 shadow-xl"
+            variant="secondary"
+            className="text-base px-7 py-3 border-white/40 text-white hover:bg-white/10"
             onClick={() => navigate(isAuthenticated ? ROUTES.RESOURCES : ROUTES.SIGNUP)}
           >
             {isAuthenticated ? "Explore Resources" : "Get Started"}
