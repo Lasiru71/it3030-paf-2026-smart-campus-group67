@@ -17,8 +17,10 @@ public class User {
     private String fullName;
     private String email;
     private String password;
-    
+
     private Role role;
+
+    private String status = "Active";
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -88,7 +90,11 @@ public class User {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -6,7 +6,8 @@ import {
   Users, BookOpen, BarChart3, Settings, Shield,
   Trash2, Edit, LogOut, Bell, Search, TrendingUp,
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
-  Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download
+  Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
+  FileText
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
 import axiosInstance from "../services/axiosInstance";
@@ -41,17 +42,17 @@ const stats = [
 ];
 
 const mockUsers = [
-  { id: 1, name: "Hasindu Chanuka", email: "hasindu@gmail.com", role: "USER",       status: "Active",   joined: "Jan 2026" },
-  { id: 2, name: "Lasiru Perera",   email: "lasiru@gmail.com",  role: "ADMIN",      status: "Active",   joined: "Feb 2026" },
-  { id: 3, name: "Kasun Madusanka", email: "kasun@gmail.com",   role: "TECHNICIAN", status: "Active",   joined: "Mar 2026" },
-  { id: 4, name: "Amali Silva",     email: "amali@gmail.com",   role: "USER",       status: "Inactive", joined: "Apr 2026" },
-  { id: 5, name: "Nadee Fernando",  email: "nadee@gmail.com",   role: "USER",       status: "Active",   joined: "Apr 2026" },
+  { id: 1, name: "Hasindu Chanuka", email: "hasindu@gmail.com", role: "USER", status: "Active", joined: "Jan 2026" },
+  { id: 2, name: "Lasiru Perera", email: "lasiru@gmail.com", role: "ADMIN", status: "Active", joined: "Feb 2026" },
+  { id: 3, name: "Kasun Madusanka", email: "kasun@gmail.com", role: "TECHNICIAN", status: "Active", joined: "Mar 2026" },
+  { id: 4, name: "Amali Silva", email: "amali@gmail.com", role: "USER", status: "Inactive", joined: "Apr 2026" },
+  { id: 5, name: "Nadee Fernando", email: "nadee@gmail.com", role: "USER", status: "Active", joined: "Apr 2026" },
 ];
 
 const roleStyle = {
-  ADMIN:      "bg-violet-100 text-violet-700 border border-violet-200",
+  ADMIN: "bg-violet-100 text-violet-700 border border-violet-200",
   TECHNICIAN: "bg-amber-100  text-amber-700  border border-amber-200",
-  USER:       "bg-sky-100    text-sky-700    border border-sky-200",
+  USER: "bg-sky-100    text-sky-700    border border-sky-200",
 };
 const avatarGradient = {
   ADMIN: "from-violet-500 to-purple-700",
@@ -59,12 +60,17 @@ const avatarGradient = {
   USER: "from-sky-400 to-blue-600",
 };
 
-const navItems = [
-  { icon: Home,      label: "Overview"  },
-  { icon: Users,     label: "Users"     },
-  { icon: BookOpen,  label: "Bookings"  },
-  { icon: BarChart3, label: "Analytics" },
-  { icon: Settings,  label: "Settings"  },
+const navSections = [
+  { header: "MAIN", items: [{ icon: Home, label: "Overview" }] },
+  { header: "DIRECTORY", items: [{ icon: Users, label: "Users" }] },
+  { header: "ACADEMIC", items: [{ icon: BookOpen, label: "Bookings" }] },
+  { header: "BUSINESS", items: [{ icon: FileText, label: "Reports" }] },
+  {
+    header: "ADMIN", items: [
+      { icon: BarChart3, label: "Analytics" },
+      { icon: Settings, label: "Settings" },
+    ]
+  },
 ];
 
 // ─── Toggle Switch ───────────────────────────────────────────
@@ -72,14 +78,12 @@ function Toggle({ checked, onChange }) {
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${
-        checked ? "bg-blue-600" : "bg-slate-200"
-      }`}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${checked ? "bg-blue-600" : "bg-slate-200"
+        }`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
-          checked ? "translate-x-6" : "translate-x-1"
-        }`}
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-200 ${checked ? "translate-x-6" : "translate-x-1"
+          }`}
       />
     </button>
   );
@@ -87,13 +91,13 @@ function Toggle({ checked, onChange }) {
 
 // ─── Settings Panel ──────────────────────────────────────────
 function SettingsPanel({ displayName }) {
-  const [notifs,     setNotifs]     = useState({ email: true, sms: false, push: true, booking: true, security: true });
-  const [security,   setSecurity]   = useState({ twoFa: false, sessionTimeout: "30", loginAlerts: true });
-  const [general,    setGeneral]    = useState({ siteName: "CampusReserve", email: "admin@campusreserve.edu", phone: "+94 11 234 5678" });
-  const [appearance, setAppearance] = useState({ 
-    theme: localStorage.getItem("admin_theme") || "light", 
-    language: "English", 
-    timezone: "Asia/Colombo" 
+  const [notifs, setNotifs] = useState({ email: true, sms: false, push: true, booking: true, security: true });
+  const [security, setSecurity] = useState({ twoFa: false, sessionTimeout: "30", loginAlerts: true });
+  const [general, setGeneral] = useState({ siteName: "CampusReserve", email: "admin@campusreserve.edu", phone: "+94 11 234 5678" });
+  const [appearance, setAppearance] = useState({
+    theme: localStorage.getItem("admin_theme") || "light",
+    language: "English",
+    timezone: "Asia/Colombo"
   });
   const [saved, setSaved] = useState(false);
 
@@ -149,9 +153,9 @@ function SettingsPanel({ displayName }) {
           </div>
           <div className="flex gap-3">
             {[
-              { label: "Platform", value: "Online",    dot: "bg-emerald-400" },
+              { label: "Platform", value: "Online", dot: "bg-emerald-400" },
               { label: "Database", value: "Connected", dot: "bg-emerald-400" },
-              { label: "Version",  value: "v2.4.1",    dot: "bg-blue-300" },
+              { label: "Version", value: "v2.4.1", dot: "bg-blue-300" },
             ].map((s) => (
               <div key={s.label} className="bg-white/10 backdrop-blur rounded-xl px-4 py-2.5 text-center shadow-lg">
                 <div className="flex items-center justify-center gap-1.5 mb-0.5">
@@ -186,8 +190,8 @@ function SettingsPanel({ displayName }) {
             </div>
             <div className="px-6 py-5 space-y-4">
               <Field label="Platform Name" value={general.siteName} onChange={(v) => setGeneral({ ...general, siteName: v })} />
-              <Field label="Admin Email"   value={general.email}    onChange={(v) => setGeneral({ ...general, email: v })} type="email" />
-              <Field label="Support Phone" value={general.phone}    onChange={(v) => setGeneral({ ...general, phone: v })} />
+              <Field label="Admin Email" value={general.email} onChange={(v) => setGeneral({ ...general, email: v })} type="email" />
+              <Field label="Support Phone" value={general.phone} onChange={(v) => setGeneral({ ...general, phone: v })} />
             </div>
           </div>
 
@@ -203,11 +207,11 @@ function SettingsPanel({ displayName }) {
               </div>
             </div>
             <div className="px-6 py-2">
-              <Row label="Email Notifications" sub="Send updates via email"     iconBg="bg-blue-50"    icon={<Mail       className="h-3.5 w-3.5 text-blue-500" />}    control={<Toggle checked={notifs.email}    onChange={(v) => setNotifs({ ...notifs, email: v })} />} />
-              <Row label="SMS Alerts"          sub="Receive SMS for key events" iconBg="bg-emerald-50" icon={<Smartphone className="h-3.5 w-3.5 text-emerald-500" />} control={<Toggle checked={notifs.sms}      onChange={(v) => setNotifs({ ...notifs, sms: v })} />} />
-              <Row label="Push Notifications"  sub="Browser push alerts"        iconBg="bg-amber-50"   icon={<Bell       className="h-3.5 w-3.5 text-amber-500" />}   control={<Toggle checked={notifs.push}     onChange={(v) => setNotifs({ ...notifs, push: v })} />} />
-              <Row label="Booking Updates"     sub="Notify on booking changes"  iconBg="bg-violet-50"  icon={<BookOpen   className="h-3.5 w-3.5 text-violet-500" />}  control={<Toggle checked={notifs.booking}  onChange={(v) => setNotifs({ ...notifs, booking: v })} />} />
-              <Row label="Security Alerts"     sub="Suspicious login warnings"  iconBg="bg-red-50"     icon={<Shield     className="h-3.5 w-3.5 text-red-500" />}     control={<Toggle checked={notifs.security} onChange={(v) => setNotifs({ ...notifs, security: v })} />} />
+              <Row label="Email Notifications" sub="Send updates via email" iconBg="bg-blue-50" icon={<Mail className="h-3.5 w-3.5 text-blue-500" />} control={<Toggle checked={notifs.email} onChange={(v) => setNotifs({ ...notifs, email: v })} />} />
+              <Row label="SMS Alerts" sub="Receive SMS for key events" iconBg="bg-emerald-50" icon={<Smartphone className="h-3.5 w-3.5 text-emerald-500" />} control={<Toggle checked={notifs.sms} onChange={(v) => setNotifs({ ...notifs, sms: v })} />} />
+              <Row label="Push Notifications" sub="Browser push alerts" iconBg="bg-amber-50" icon={<Bell className="h-3.5 w-3.5 text-amber-500" />} control={<Toggle checked={notifs.push} onChange={(v) => setNotifs({ ...notifs, push: v })} />} />
+              <Row label="Booking Updates" sub="Notify on booking changes" iconBg="bg-violet-50" icon={<BookOpen className="h-3.5 w-3.5 text-violet-500" />} control={<Toggle checked={notifs.booking} onChange={(v) => setNotifs({ ...notifs, booking: v })} />} />
+              <Row label="Security Alerts" sub="Suspicious login warnings" iconBg="bg-red-50" icon={<Shield className="h-3.5 w-3.5 text-red-500" />} control={<Toggle checked={notifs.security} onChange={(v) => setNotifs({ ...notifs, security: v })} />} />
             </div>
           </div>
 
@@ -223,8 +227,8 @@ function SettingsPanel({ displayName }) {
               </div>
             </div>
             <div className="px-6 py-2">
-              <Row label="Two-Factor Auth (2FA)" sub="Require OTP on login" iconBg="bg-slate-100" icon={<Shield className="h-3.5 w-3.5 text-slate-500" />} control={<Toggle checked={security.twoFa}       onChange={(v) => setSecurity({ ...security, twoFa: v })} />} />
-              <Row label="Login Activity Alerts" sub="Email on new sign-in" iconBg="bg-slate-100" icon={<Bell   className="h-3.5 w-3.5 text-slate-500" />} control={<Toggle checked={security.loginAlerts} onChange={(v) => setSecurity({ ...security, loginAlerts: v })} />} />
+              <Row label="Two-Factor Auth (2FA)" sub="Require OTP on login" iconBg="bg-slate-100" icon={<Shield className="h-3.5 w-3.5 text-slate-500" />} control={<Toggle checked={security.twoFa} onChange={(v) => setSecurity({ ...security, twoFa: v })} />} />
+              <Row label="Login Activity Alerts" sub="Email on new sign-in" iconBg="bg-slate-100" icon={<Bell className="h-3.5 w-3.5 text-slate-500" />} control={<Toggle checked={security.loginAlerts} onChange={(v) => setSecurity({ ...security, loginAlerts: v })} />} />
             </div>
             <div className="px-6 pb-5">
               <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Session Timeout</label>
@@ -254,17 +258,16 @@ function SettingsPanel({ displayName }) {
                 <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">Theme</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { val: "light", icon: <Sun  className="h-4 w-4" />, label: "Light Mode", desc: "Clean, bright layout" },
-                    { val: "dark",  icon: <Moon className="h-4 w-4" />, label: "Dark Mode",  desc: "Easy on the eyes" },
+                    { val: "light", icon: <Sun className="h-4 w-4" />, label: "Light Mode", desc: "Clean, bright layout" },
+                    { val: "dark", icon: <Moon className="h-4 w-4" />, label: "Dark Mode", desc: "Easy on the eyes" },
                   ].map((t) => (
                     <button
                       key={t.val}
                       onClick={() => setAppearance({ ...appearance, theme: t.val })}
-                      className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${
-                        appearance.theme === t.val
-                          ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100 border-blue-500"
-                          : "border-slate-200 hover:border-slate-300 bg-white"
-                      }`}
+                      className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all ${appearance.theme === t.val
+                        ? "border-blue-500 bg-blue-50 shadow-md shadow-blue-100 border-blue-500"
+                        : "border-slate-200 hover:border-slate-300 bg-white"
+                        }`}
                     >
                       <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${appearance.theme === t.val ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500"}`}>
                         {t.icon}
@@ -307,10 +310,10 @@ function SettingsPanel({ displayName }) {
           </div>
           <div className="bg-white px-6 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Version",       value: "v2.4.1",        icon: <RefreshCw className="h-4 w-4 text-blue-600" />,    bg: "bg-blue-50",    badge: "text-blue-700 bg-blue-100 border border-blue-200" },
-              { label: "Database",      value: "MongoDB",       icon: <Database  className="h-4 w-4 text-emerald-600" />, bg: "bg-emerald-50", badge: "text-emerald-700 bg-emerald-100 border border-emerald-200" },
-              { label: "Storage",       value: "14.2 / 50 GB",  icon: <Server    className="h-4 w-4 text-violet-600" />,  bg: "bg-violet-50",  badge: "text-violet-700 bg-violet-100 border border-violet-200" },
-              { label: "Active Logins", value: "23 sessions",   icon: <Users     className="h-4 w-4 text-amber-600" />,   bg: "bg-amber-50",   badge: "text-amber-700 bg-amber-100 border border-amber-200" },
+              { label: "Version", value: "v2.4.1", icon: <RefreshCw className="h-4 w-4 text-blue-600" />, bg: "bg-blue-50", badge: "text-blue-700 bg-blue-100 border border-blue-200" },
+              { label: "Database", value: "MongoDB", icon: <Database className="h-4 w-4 text-emerald-600" />, bg: "bg-emerald-50", badge: "text-emerald-700 bg-emerald-100 border border-emerald-200" },
+              { label: "Storage", value: "14.2 / 50 GB", icon: <Server className="h-4 w-4 text-violet-600" />, bg: "bg-violet-50", badge: "text-violet-700 bg-violet-100 border border-violet-200" },
+              { label: "Active Logins", value: "23 sessions", icon: <Users className="h-4 w-4 text-amber-600" />, bg: "bg-amber-50", badge: "text-amber-700 bg-amber-100 border border-amber-200" },
             ].map((info) => (
               <div key={info.label} className="flex items-center gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
                 <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm ${info.bg}`}>
@@ -342,17 +345,15 @@ function SettingsPanel({ displayName }) {
 
 // ─── Add User Modal ──────────────────────────────────────────
 function AddUserModal({ onClose, onAdd }) {
-  const [formData, setFormData] = useState({ name: "", email: "", role: "USER" });
+  const [formData, setFormData] = useState({ name: "", email: "", role: "USER", password: "User@123" });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     onAdd({
-      id: Date.now(),
-      name: formData.name,
+      fullName: formData.name,
       email: formData.email,
       role: formData.role,
-      status: "Active",
-      joined: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" })
+      password: formData.password
     });
     onClose();
   };
@@ -372,15 +373,15 @@ function AddUserModal({ onClose, onAdd }) {
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
             <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Full Name</label>
-            <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="John Doe" />
+            <input required type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="John Doe" />
           </div>
           <div>
             <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Email Address</label>
-            <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="john@example.com" />
+            <input required type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="john@example.com" />
           </div>
           <div>
             <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">Role</label>
-            <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+            <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
               <option value="USER">User (Student/Staff)</option>
               <option value="TECHNICIAN">Technician</option>
               <option value="ADMIN">Administrator</option>
@@ -401,9 +402,9 @@ function AddUserModal({ onClose, onAdd }) {
 export default function AdminDashboardPage() {
   const { auth, logoutUser } = useAuth();
   const navigate = useNavigate();
-  const [search, setSearch]       = useState("");
-  const [users, setUsers]         = useState(mockUsers);
-  const [toast, setToast]         = useState(null);
+  const [search, setSearch] = useState("");
+  const [users, setUsers] = useState(mockUsers);
+  const [toast, setToast] = useState(null);
   const [activeNav, setActiveNav] = useState("Overview");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -421,7 +422,7 @@ export default function AdminDashboardPage() {
   stats[0].value = users.length.toString();
 
   useEffect(() => {
-    axiosInstance.get("/users")
+    axiosInstance.get("/api/users")
       .then(res => {
         if (res.data && res.data.length > 0) {
           const mapped = res.data.map(u => ({
@@ -429,7 +430,7 @@ export default function AdminDashboardPage() {
             name: u.fullName || u.email.split("@")[0],
             email: u.email,
             role: u.role || "USER",
-            status: "Active",
+            status: u.status || "Active",
             joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Recently"
           }));
           setUsers(mapped);
@@ -440,7 +441,7 @@ export default function AdminDashboardPage() {
 
   const generateUserTablePDF = () => {
     const doc = new jsPDF();
-    
+
     // Colorful header background
     doc.setFillColor(37, 99, 235); // Blue gradient base
     doc.rect(0, 0, 210, 40, "F");
@@ -450,7 +451,7 @@ export default function AdminDashboardPage() {
     doc.setFontSize(22);
     doc.setFont("helvetica", "bold");
     doc.text("CampusReserve User Analytics", 105, 20, { align: "center" });
-    
+
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 30, { align: "center" });
@@ -498,17 +499,128 @@ export default function AdminDashboardPage() {
     });
 
     doc.save("CampusReserve_User_Report.pdf");
-    
+
     setToast("Report downloaded successfully! 📊");
     setTimeout(() => setToast(null), 3000);
   };
 
+  const generateSystemPDF = () => {
+    const doc = new jsPDF();
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, 210, 40, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("CampusReserve System Overview", 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 30, { align: "center" });
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Platform Statistics", 14, 55);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Total Users: ${totalUsers}`, 14, 65);
+    doc.text(`Administrators: ${adminCount}`, 14, 72);
+    doc.text(`Technicians: ${techCount}`, 14, 79);
+    doc.text(`Standard Users: ${standardCount}`, 14, 86);
+    doc.text("System Health: 99.8% Uptime", 14, 93);
+    doc.text("Active Bookings: 347", 14, 100);
+    autoTable(doc, {
+      startY: 115,
+      head: [["Component", "Status", "Details"]],
+      body: [
+        ["Platform Version", "v2.4.1", "Latest stable"],
+        ["Database", "MongoDB", "Connected"],
+        ["Storage", "14.2 / 50 GB", "28.4% used"],
+        ["Active Sessions", "23", "Real-time"],
+        ["Server CPU", "32%", "Normal"],
+        ["Memory Usage", "2.4 GB", "45% capacity"],
+      ],
+      theme: "grid",
+      headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+    });
+    doc.save("CampusReserve_System_Overview.pdf");
+    setToast("System overview report downloaded! 📊");
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const generateBookingPDF = () => {
+    const doc = new jsPDF();
+    doc.setFillColor(37, 99, 235);
+    doc.rect(0, 0, 210, 40, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.text("CampusReserve Booking Report", 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 30, { align: "center" });
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("Booking Overview", 14, 55);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text("Active Bookings: 347", 14, 65);
+    doc.text("Pending Approvals: 14", 14, 72);
+    doc.text("Completed This Month: 289", 14, 79);
+    autoTable(doc, {
+      startY: 95,
+      head: [["#", "Facility", "Booked By", "Date", "Time", "Status"]],
+      body: [
+        ["1", "Auditorium A", "Hasindu C.", "2026-04-12", "09:00-11:00", "Approved"],
+        ["2", "Lab Room 3", "Kasun M.", "2026-04-12", "14:00-16:00", "Pending"],
+        ["3", "Conference Hall", "Amali S.", "2026-04-13", "10:00-12:00", "Approved"],
+        ["4", "Sports Complex", "Nadee F.", "2026-04-13", "15:00-17:00", "Pending"],
+        ["5", "Library Room 2", "Lasiru P.", "2026-04-14", "08:00-10:00", "Approved"],
+      ],
+      theme: "grid",
+      headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+    });
+    doc.save("CampusReserve_Booking_Report.pdf");
+    setToast("Booking report downloaded! 📊");
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const displayName = auth?.fullName || auth?.email || "Admin";
-  const avatarSrc   = localStorage.getItem("admin_avatar");
+  const avatarSrc = localStorage.getItem("admin_avatar");
 
   const handleDelete = (id) => {
-    setUsers((prev) => prev.filter((u) => u.id !== id));
-    setToast("User removed successfully.");
+    axiosInstance.delete(`/api/users/${id}`)
+      .then(() => {
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+        setToast("User removed successfully.");
+      })
+      .catch(err => {
+        console.error("Delete failed:", err);
+        const isMock = typeof id === 'number' || id.length < 5;
+        setToast(isMock ? "Mock user removed locally." : "Error: Could not delete user from system.");
+        // Fallback for mock data
+        if (isMock) {
+          setUsers((prev) => prev.filter((u) => u.id !== id));
+        }
+      });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleToggleStatus = (id) => {
+    axiosInstance.patch(`/api/users/${id}/status`)
+      .then(res => {
+        setUsers(prev => prev.map(u => u.id === id ? { ...u, status: res.data.status } : u));
+        setToast(`User ${res.data.status === "Active" ? "activated" : "deactivated"} successfully.`);
+      })
+      .catch(err => {
+        console.error("Status toggle failed:", err);
+        setToast("Error updating status. Persistent ID required.");
+        // Fallback for mock data
+        if (typeof id === 'number') {
+          setUsers(prev => prev.map(u => u.id === id ? { ...u, status: u.status === "Active" ? "Inactive" : "Active" } : u));
+        }
+      });
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -542,24 +654,30 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = activeNav === item.label;
-            return (
-              <button
-                key={item.label}
-                onClick={() => setActiveNav(item.label)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                  active ? "text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/[0.07]"
-                }`}
-                style={active ? { background: "linear-gradient(135deg,#2563eb,#4f46e5)" } : {}}
-              >
-                <item.icon className="h-4 w-4 shrink-0" />
-                {item.label}
-                {active && <ChevronRight className="h-3.5 w-3.5 ml-auto opacity-60" />}
-              </button>
-            );
-          })}
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          {navSections.map((section) => (
+            <div key={section.header} className="mb-3">
+              <p className="px-4 mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{section.header}</p>
+              <div className="space-y-0.5">
+                {section.items.map((item) => {
+                  const active = activeNav === item.label;
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => setActiveNav(item.label)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${active ? "text-white shadow-lg" : "text-slate-400 hover:text-white hover:bg-white/[0.07]"
+                        }`}
+                      style={active ? { background: "linear-gradient(135deg,#2563eb,#4f46e5)" } : {}}
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {item.label}
+                      {active && <ChevronRight className="h-3.5 w-3.5 ml-auto opacity-60" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Sidebar footer */}
@@ -599,13 +717,7 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-slate-400 mt-0.5 font-medium">Welcome back, {displayName} 👋</p>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={generateUserTablePDF}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white rounded-xl shadow-md hover:shadow-emerald-500/20 active:scale-95 transition-all hover:-translate-y-0.5"
-              style={{ background: "linear-gradient(135deg, #10b981, #059669)" }}
-            >
-              <Download className="h-3.5 w-3.5" /> Download Report
-            </button>
+
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
@@ -625,333 +737,403 @@ export default function AdminDashboardPage() {
 
         {/* Body — conditionally render panels */}
         {activeNav === "Settings" && <SettingsPanel displayName={displayName} />}
-        
-        {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics") && (
-          <main className={`flex-1 overflow-y-auto px-8 py-7 bg-slate-50 ${(activeNav === "Overview" || activeNav === "Analytics") ? "space-y-7" : ""}`}>
 
-          {/* ─ Colorful Stats ─ */}
-          {activeNav === "Overview" && (
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
-            {stats.map((s) => (
-              <div
-                key={s.label}
-                className="relative rounded-2xl p-5 overflow-hidden hover:scale-[1.02] transition-transform duration-200 cursor-default"
-                style={{ background: s.gradient, boxShadow: s.glow }}
-              >
-                {/* Decorative circles */}
-                <div className="absolute -top-5 -right-5 h-24 w-24 rounded-full bg-white/10" />
-                <div className="absolute -bottom-8 -left-4 h-20 w-20 rounded-full bg-white/5" />
+        {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports") && (
+          <main className={`flex-1 overflow-y-auto px-8 py-7 bg-slate-50 ${(activeNav === "Overview" || activeNav === "Analytics" || activeNav === "Reports") ? "space-y-7" : ""} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
 
-                <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="h-11 w-11 rounded-xl bg-white/25 flex items-center justify-center shadow-md">
-                      <s.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <span className="text-[10px] font-bold bg-white/25 text-white px-2.5 py-1 rounded-full flex items-center gap-1">
-                      <TrendingUp className="h-2.5 w-2.5" />
-                      {s.trend}
-                    </span>
-                  </div>
-                  <p className="text-3xl font-black text-white tracking-tight leading-none mb-1">{s.value}</p>
-                  <p className="text-sm font-bold text-white/80">{s.label}</p>
-                  <p className="text-xs text-white/55 mt-1">{s.change}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          )}
+            {/* ─ Colorful Stats ─ */}
+            {activeNav === "Overview" && (
+              <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
+                {stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="relative rounded-2xl p-5 overflow-hidden hover:scale-[1.02] transition-transform duration-200 cursor-default"
+                    style={{ background: s.gradient, boxShadow: s.glow }}
+                  >
+                    {/* Decorative circles */}
+                    <div className="absolute -top-5 -right-5 h-24 w-24 rounded-full bg-white/10" />
+                    <div className="absolute -bottom-8 -left-4 h-20 w-20 rounded-full bg-white/5" />
 
-          {/* ─ System Analytics & Role Distribution ─ */}
-          {activeNav === "Overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
-              {/* Role Distribution Chart */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white">Role Distribution</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Platform users by access level</p>
-                  </div>
-                  <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center">
-                    <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                </div>
-                <div className="p-7 space-y-7">
-                  {/* Admin Bar */}
-                  <div>
-                    <div className="flex justify-between items-end mb-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-3.5 w-3.5 rounded-full bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.6)]" />
-                        <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">Administrators</span>
-                      </div>
-                      <span className="text-sm font-black text-violet-600 dark:text-violet-400">{adminCount}</span>
-                    </div>
-                    <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full transition-all duration-1000" style={{ width: adminPct }} />
-                    </div>
-                  </div>
-                  {/* Technician Bar */}
-                  <div>
-                    <div className="flex justify-between items-end mb-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-3.5 w-3.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
-                        <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">Technicians</span>
-                      </div>
-                      <span className="text-sm font-black text-amber-600 dark:text-amber-400">{techCount}</span>
-                    </div>
-                    <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-1000" style={{ width: techPct }} />
-                    </div>
-                  </div>
-                  {/* Student/User Bar */}
-                  <div>
-                    <div className="flex justify-between items-end mb-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div className="h-3.5 w-3.5 rounded-full bg-sky-500 shadow-[0_0_10px_rgba(14,165,233,0.6)]" />
-                        <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200">Standard Users</span>
-                      </div>
-                      <span className="text-sm font-black text-sky-600 dark:text-sky-400">{standardCount}</span>
-                    </div>
-                    <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-sky-400 to-blue-600 rounded-full transition-all duration-1000" style={{ width: userPct }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Weekly Activity Chart (Mock) */}
-              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                <div className="px-7 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white">Activity Pulse</h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Platform interactions this week</p>
-                  </div>
-                  <div className="h-10 w-10 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                     <Activity className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                </div>
-                <div className="p-7 flex flex-col justify-end h-[260px]">
-                  <div className="flex items-end justify-between h-full gap-2 lg:gap-4">
-                    {[45, 75, 50, 95, 60, 85, 40].map((h, i) => (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-3 relative group">
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-t-lg relative flex-1">
-                          <div 
-                            className="absolute bottom-0 w-full bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-lg opacity-80 group-hover:opacity-100 transition-all duration-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.5)]" 
-                            style={{ height: `${h}%` }}
-                          />
+                    <div className="relative z-10">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="h-11 w-11 rounded-xl bg-white/25 flex items-center justify-center shadow-md">
+                          <s.icon className="h-5 w-5 text-white" />
                         </div>
-                        <span className="text-[11px] font-extrabold text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors uppercase tracking-wider">
-                          {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'][i]}
+                        <span className="text-[10px] font-bold bg-white/25 text-white px-2.5 py-1 rounded-full flex items-center gap-1">
+                          <TrendingUp className="h-2.5 w-2.5" />
+                          {s.trend}
                         </span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─ System Analytics Tab ─ */}
-          {activeNav === "Analytics" && (
-            <div className="space-y-7">
-              {/* Header */}
-              <div>
-                <h2 className="text-xl font-black text-slate-900">System Insights</h2>
-                <p className="text-sm text-slate-500 mt-1">Deep-dive into performance and platform telemetry.</p>
-              </div>
-
-              {/* Top Metrics Row */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {[
-                  { label: "Server CPU", value: "32%", stat: "Normal", color: "bg-blue-500", ring: "ring-blue-500/20" },
-                  { label: "Memory Usage", value: "2.4 GB", stat: "45% cap", color: "bg-emerald-500", ring: "ring-emerald-500/20" },
-                  { label: "Network I/O", value: "148 MB/s", stat: "Peak", color: "bg-violet-500", ring: "ring-violet-500/20" }
-                ].map((m, i) => (
-                  <div key={i} className={`p-6 rounded-3xl bg-white border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all`}>
-                    <div className={`absolute top-0 right-0 p-8 rounded-bl-full bg-slate-50 ring-4 ${m.ring} transition-transform group-hover:scale-110`} />
-                    <p className="text-xs font-bold text-slate-400 mb-2 tracking-wider uppercase relative z-10">{m.label}</p>
-                    <p className="text-3xl font-black text-slate-800 relative z-10">{m.value}</p>
-                    <div className="flex items-center gap-2 mt-4 relative z-10">
-                      <div className={`h-2 w-2 rounded-full ${m.color} animate-pulse`} />
-                      <span className="text-xs font-bold text-slate-500">{m.stat}</span>
+                      <p className="text-3xl font-black text-white tracking-tight leading-none mb-1">{s.value}</p>
+                      <p className="text-sm font-bold text-white/80">{s.label}</p>
+                      <p className="text-xs text-white/55 mt-1">{s.change}</p>
                     </div>
                   </div>
                 ))}
               </div>
+            )}
 
-              {/* Bottom Split */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
-                {/* Traffic Sources */}
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden lg:col-span-1 p-7 flex flex-col">
-                  <h3 className="text-sm font-black text-slate-900 mb-6 uppercase tracking-wider">Device Traffic</h3>
-                  <div className="flex-1 flex flex-col justify-center gap-6">
-                    {[
-                      { icon: Smartphone, label: "Mobile Apps", pct: 65, color: "from-blue-500 to-indigo-600" },
-                      { icon: Globe, label: "Web Desktop", pct: 28, color: "from-emerald-400 to-teal-500" },
-                      { icon: Server, label: "API Consumers", pct: 7, color: "from-amber-400 to-orange-500" }
-                    ].map((t, idx) => (
-                      <div key={idx}>
-                        <div className="flex justify-between items-center mb-2">
-                          <div className="flex items-center gap-2 text-slate-700">
-                            <t.icon className="h-4 w-4" />
-                            <span className="text-xs font-bold">{t.label}</span>
-                          </div>
-                          <span className="text-xs font-black">{t.pct}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                          <div className={`h-full bg-gradient-to-r ${t.color} rounded-full`} style={{ width: `${t.pct}%` }} />
-                        </div>
-                      </div>
-                    ))}
+            {/* ─ User Growth Trend + Enrollment Distribution ─ */}
+            {activeNav === "Overview" && (
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
+                {/* User Growth Trend (Line Chart) */}
+                <div className="lg:col-span-3 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="px-7 py-6 border-b border-slate-100 flex items-center justify-between">
+                    <h2 className="text-lg font-black text-slate-900">User Growth Trend</h2>
+                    <select className="text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none cursor-pointer">
+                      <option>Last 30 Days</option>
+                      <option>Last 7 Days</option>
+                      <option>Last 90 Days</option>
+                    </select>
+                  </div>
+                  <div className="p-7">
+                    <svg viewBox="0 0 500 200" className="w-full h-[220px]">
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <g key={i}>
+                          <line x1="40" y1={20 + i * 40} x2="480" y2={20 + i * 40} stroke="#e2e8f0" strokeWidth="0.5" strokeDasharray="4 4" />
+                          <text x="30" y={24 + i * 40} textAnchor="end" fill="#94a3b8" fontSize="10">{16 - i * 4}</text>
+                        </g>
+                      ))}
+                      <text x="60" y="195" textAnchor="middle" fill="#94a3b8" fontSize="10">Mar</text>
+                      <text x="270" y="195" textAnchor="middle" fill="#94a3b8" fontSize="10">Mid</text>
+                      <text x="460" y="195" textAnchor="middle" fill="#94a3b8" fontSize="10">Apr</text>
+                      <defs>
+                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#10b981" stopOpacity="0.02" />
+                        </linearGradient>
+                      </defs>
+                      <path d="M60,150 L120,140 L180,125 L240,115 L300,85 L360,65 L420,55 L460,35 L460,175 L60,175 Z" fill="url(#areaGrad)" />
+                      <polyline fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points="60,150 120,140 180,125 240,115 300,85 360,65 420,55 460,35" />
+                      {[[60, 150], [120, 140], [180, 125], [240, 115], [300, 85], [360, 65], [420, 55], [460, 35]].map(([cx, cy], i) => (
+                        <circle key={i} cx={cx} cy={cy} r="3.5" fill="#10b981" stroke="white" strokeWidth="2" />
+                      ))}
+                    </svg>
                   </div>
                 </div>
 
-                {/* System Logs */}
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden lg:col-span-2">
-                  <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between">
-                     <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Recent Telemetry</h3>
-                     <button className="text-xs font-bold text-blue-600 hover:text-blue-700">View All</button>
+                {/* Enrollment Distribution (Donut Chart) */}
+                <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                  <div className="px-7 py-6 border-b border-slate-100">
+                    <h2 className="text-lg font-black text-slate-900">Enrollment Distribution</h2>
                   </div>
-                  <div className="px-7 py-4">
-                    {[
-                      { time: "2m ago", evt: "Database Sync Check", stat: "Success", sc: "text-emerald-600 bg-emerald-50" },
-                      { time: "14m ago", evt: "Failed Login Attempt (IP: 192.168.1.5)", stat: "Warn", sc: "text-amber-600 bg-amber-50" },
-                      { time: "1h ago", evt: "Weekly Backup Generated", stat: "Success", sc: "text-emerald-600 bg-emerald-50" },
-                      { time: "3h ago", evt: "High CPU Spike (Node 2)", stat: "Resolved", sc: "text-blue-600 bg-blue-50" }
-                    ].map((log, n) => (
-                      <div key={n} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0 group">
-                        <div className="flex items-center gap-4">
-                          <span className="text-xs font-bold text-slate-400 w-16">{log.time}</span>
-                          <span className="text-sm font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">{log.evt}</span>
-                        </div>
-                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase ${log.sc}`}>{log.stat}</span>
-                      </div>
-                    ))}
+                  <div className="p-7 flex flex-col items-center justify-center">
+                    <svg viewBox="0 0 200 200" className="w-44 h-44">
+                      <circle cx="100" cy="100" r="70" fill="none" stroke="#e2e8f0" strokeWidth="20" />
+                      <circle cx="100" cy="100" r="70" fill="none" stroke="#10b981" strokeWidth="20" strokeDasharray={`${(standardCount / totalUsers) * 439.82} ${439.82}`} strokeDashoffset="0" transform="rotate(-90 100 100)" strokeLinecap="round" />
+                      <circle cx="100" cy="100" r="70" fill="none" stroke="#6366f1" strokeWidth="20" strokeDasharray={`${(techCount / totalUsers) * 439.82} ${439.82}`} strokeDashoffset={`${-(standardCount / totalUsers) * 439.82}`} transform="rotate(-90 100 100)" strokeLinecap="round" />
+                      <circle cx="100" cy="100" r="70" fill="none" stroke="#1e1b4b" strokeWidth="20" strokeDasharray={`${(adminCount / totalUsers) * 439.82} ${439.82}`} strokeDashoffset={`${-((standardCount + techCount) / totalUsers) * 439.82}`} transform="rotate(-90 100 100)" strokeLinecap="round" />
+                      <text x="100" y="95" textAnchor="middle" fill="#1e293b" fontSize="28" fontWeight="800">{totalUsers}</text>
+                      <text x="100" y="115" textAnchor="middle" fill="#94a3b8" fontSize="11" fontWeight="600">TOTAL</text>
+                    </svg>
+                    <div className="flex items-center justify-center gap-5 mt-6">
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full bg-emerald-500" /><span className="text-xs font-bold text-slate-600">Students</span></div>
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full bg-indigo-500" /><span className="text-xs font-bold text-slate-600">Technicians</span></div>
+                      <div className="flex items-center gap-2"><div className="h-3 w-3 rounded-full bg-indigo-950" /><span className="text-xs font-bold text-slate-600">Admins</span></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ─ User Table ─ */}
-          {activeNav === "Users" && (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            {/* Table header */}
-            <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-black text-slate-900">User Management</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Manage all registered accounts and their roles</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full">
-                  {filtered.length} of {users.length}
-                </span>
-                <button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="flex items-center gap-1.5 text-xs font-bold text-white px-4 py-2 rounded-xl shadow-[0_4px_15px_rgba(37,99,235,0.3)] hover:opacity-90 active:scale-95 transition-all"
-                  style={{ background: "linear-gradient(135deg,#2563eb,#4f46e5)" }}
-                >
-                  <Users className="h-3.5 w-3.5" /> Add User
-                </button>
-              </div>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-100">
-                    {["User", "Email", "Role", "Joined", "Status", "Actions"].map((h) => (
-                      <th key={h} className="text-left px-7 py-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((user, i) => (
-                    <tr
-                      key={user.id}
-                      className={`group transition-colors hover:bg-blue-50/40 ${i !== filtered.length - 1 ? "border-b border-slate-50" : ""}`}
-                    >
-                      <td className="px-7 py-4">
-                        <div className="flex items-center gap-3">
-                          <span className={`h-9 w-9 rounded-full text-white flex items-center justify-center text-xs font-black uppercase shrink-0 bg-gradient-to-br ${avatarGradient[user.role]} shadow-sm`}>
-                            {user.name[0]}
-                          </span>
-                          <span className="font-bold text-slate-800 text-sm">{user.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-7 py-4 text-slate-500 text-sm">{user.email}</td>
-                      <td className="px-7 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${roleStyle[user.role]}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-7 py-4 text-slate-400 text-xs font-medium">{user.joined}</td>
-                      <td className="px-7 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                          user.status === "Active"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-slate-100 text-slate-400"
-                        }`}>
-                          {user.status === "Active" ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                          {user.status}
-                        </span>
-                      </td>
-                      <td className="px-7 py-4">
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-                            <Edit className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(user.id)}
-                            className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+
+            {/* ─ System Analytics Tab ─ */}
+            {activeNav === "Analytics" && (
+              <div className="space-y-7">
+                {/* Header */}
+                <div>
+                  <h2 className="text-xl font-black text-slate-900">System Insights</h2>
+                  <p className="text-sm text-slate-500 mt-1">Deep-dive into performance and platform telemetry.</p>
+                </div>
+
+                {/* Top Metrics Row */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {[
+                    { label: "Server CPU", value: "32%", stat: "Normal", color: "bg-blue-500", ring: "ring-blue-500/20" },
+                    { label: "Memory Usage", value: "2.4 GB", stat: "45% cap", color: "bg-emerald-500", ring: "ring-emerald-500/20" },
+                    { label: "Network I/O", value: "148 MB/s", stat: "Peak", color: "bg-violet-500", ring: "ring-violet-500/20" }
+                  ].map((m, i) => (
+                    <div key={i} className={`p-6 rounded-3xl bg-white border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all`}>
+                      <div className={`absolute top-0 right-0 p-8 rounded-bl-full bg-slate-50 ring-4 ${m.ring} transition-transform group-hover:scale-110`} />
+                      <p className="text-xs font-bold text-slate-400 mb-2 tracking-wider uppercase relative z-10">{m.label}</p>
+                      <p className="text-3xl font-black text-slate-800 relative z-10">{m.value}</p>
+                      <div className="flex items-center gap-2 mt-4 relative z-10">
+                        <div className={`h-2 w-2 rounded-full ${m.color} animate-pulse`} />
+                        <span className="text-xs font-bold text-slate-500">{m.stat}</span>
+                      </div>
+                    </div>
                   ))}
+                </div>
 
-                  {filtered.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="text-center py-12 text-slate-400">
-                        <Users className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                        <p className="font-semibold text-sm">No users match your search</p>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          )}
-        </main>
+                {/* Bottom Split */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-7">
+                  {/* Traffic Sources */}
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden lg:col-span-1 p-7 flex flex-col">
+                    <h3 className="text-sm font-black text-slate-900 mb-6 uppercase tracking-wider">Device Traffic</h3>
+                    <div className="flex-1 flex flex-col justify-center gap-6">
+                      {[
+                        { icon: Smartphone, label: "Mobile Apps", pct: 65, color: "from-blue-500 to-indigo-600" },
+                        { icon: Globe, label: "Web Desktop", pct: 28, color: "from-emerald-400 to-teal-500" },
+                        { icon: Server, label: "API Consumers", pct: 7, color: "from-amber-400 to-orange-500" }
+                      ].map((t, idx) => (
+                        <div key={idx}>
+                          <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center gap-2 text-slate-700">
+                              <t.icon className="h-4 w-4" />
+                              <span className="text-xs font-bold">{t.label}</span>
+                            </div>
+                            <span className="text-xs font-black">{t.pct}%</span>
+                          </div>
+                          <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div className={`h-full bg-gradient-to-r ${t.color} rounded-full`} style={{ width: `${t.pct}%` }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* System Logs */}
+                  <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden lg:col-span-2">
+                    <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between">
+                      <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Recent Telemetry</h3>
+                      <button className="text-xs font-bold text-blue-600 hover:text-blue-700">View All</button>
+                    </div>
+                    <div className="px-7 py-4">
+                      {[
+                        { time: "2m ago", evt: "Database Sync Check", stat: "Success", sc: "text-emerald-600 bg-emerald-50" },
+                        { time: "14m ago", evt: "Failed Login Attempt (IP: 192.168.1.5)", stat: "Warn", sc: "text-amber-600 bg-amber-50" },
+                        { time: "1h ago", evt: "Weekly Backup Generated", stat: "Success", sc: "text-emerald-600 bg-emerald-50" },
+                        { time: "3h ago", evt: "High CPU Spike (Node 2)", stat: "Resolved", sc: "text-blue-600 bg-blue-50" }
+                      ].map((log, n) => (
+                        <div key={n} className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0 group">
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs font-bold text-slate-400 w-16">{log.time}</span>
+                            <span className="text-sm font-semibold text-slate-700 group-hover:text-blue-600 transition-colors">{log.evt}</span>
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase ${log.sc}`}>{log.stat}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ─ Reports Tab ─ */}
+            {activeNav === "Reports" && (
+              <div className="space-y-7">
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 mb-1">Report Center</h3>
+                  <p className="text-xs text-slate-500 mb-6">Generate professional PDF reports for your specific modules.</p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* System Overview */}
+                    <div className="group bg-white rounded-3xl border border-slate-100 shadow-sm p-7 flex flex-col justify-between hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300">
+                      <div>
+                        <div className="h-12 w-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                          <FileText className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-lg font-bold text-slate-800">System Overview</h4>
+                          <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-wider">Growth</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-8 leading-relaxed">A comprehensive document containing platform health, user growth trends, and overall performance metrics.</p>
+                      </div>
+                      <button
+                        onClick={generateSystemPDF}
+                        className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-900 active:scale-95 transition-all shadow-md group-hover:shadow-lg"
+                      >
+                        <Download className="h-4 w-4" /> Generate Report
+                      </button>
+                    </div>
+
+                    {/* User Directory */}
+                    <div className="group bg-white rounded-3xl border border-slate-100 shadow-sm p-7 flex flex-col justify-between hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 transition-all duration-300">
+                      <div>
+                        <div className="h-12 w-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                          <Users className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-lg font-bold text-slate-800">User Directory</h4>
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider">Access</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-8 leading-relaxed">Detailed records of all registered accounts, roles, access levels, and registration timestamps across the system.</p>
+                      </div>
+                      <button
+                        onClick={generateUserTablePDF}
+                        className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-900 active:scale-95 transition-all shadow-md group-hover:shadow-lg"
+                      >
+                        <Download className="h-4 w-4" /> Generate Report
+                      </button>
+                    </div>
+
+                    {/* Booking Report */}
+                    <div className="group bg-white rounded-3xl border border-slate-100 shadow-sm p-7 flex flex-col justify-between hover:shadow-xl hover:shadow-violet-500/10 hover:-translate-y-1 transition-all duration-300">
+                      <div>
+                        <div className="h-12 w-12 bg-violet-50 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                          <BookOpen className="h-6 w-6 text-violet-600" />
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-lg font-bold text-slate-800">Booking Analytics</h4>
+                          <span className="px-2 py-0.5 rounded-md bg-violet-100 text-violet-700 text-[10px] font-black uppercase tracking-wider">Academic</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-8 leading-relaxed">Complete transaction history for all reservations, including student details, resource allocation, and status logs.</p>
+                      </div>
+                      <button
+                        onClick={generateBookingPDF}
+                        className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-900 active:scale-95 transition-all shadow-md group-hover:shadow-lg"
+                      >
+                        <Download className="h-4 w-4" /> Generate Report
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ─ User Table ─ */}
+            {activeNav === "Users" && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[600px]">
+                {/* Table header */}
+                <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-800">User Directory</h2>
+                  </div>
+                  <div className="flex items-center gap-4 flex-1 max-w-2xl justify-end">
+                    <div className="relative flex-1 max-w-md">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Search by name or email..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 text-sm border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setIsAddModalOpen(true)}
+                      className="flex items-center gap-2 text-sm font-bold text-white px-5 py-2.5 rounded-xl shadow-lg hover:opacity-90 active:scale-95 transition-all whitespace-nowrap"
+                      style={{ background: "linear-gradient(135deg,#2563eb,#4f46e5)" }}
+                    >
+                      <Users className="h-4 w-4" /> Add New User
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-white border-b border-slate-100">
+                        {["Name", "Email", "Status", "Actions"].map((h) => (
+                          <th key={h} className="text-left px-7 py-4 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((user, i) => (
+                        <tr
+                          key={user.id}
+                          className="hover:bg-slate-50/50 transition-colors"
+                        >
+                          <td className="px-7 py-5">
+                            <span className="font-bold text-blue-600 hover:underline cursor-pointer">{user.name}</span>
+                          </td>
+                          <td className="px-7 py-5 text-slate-500 font-medium">{user.email}</td>
+                          <td className="px-7 py-5">
+                            <span className="text-sm font-bold text-slate-700">{user.status}</span>
+                          </td>
+                          <td className="px-7 py-5">
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => handleToggleStatus(user.id)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${user.status === "Active"
+                                  ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                  }`}
+                              >
+                                {user.status === "Active" ? (
+                                  <><RefreshCw className="h-3.5 w-3.5" /> Deactivate</>
+                                ) : (
+                                  <><CheckCircle className="h-3.5 w-3.5" /> Activate</>
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleDelete(user.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-500 text-xs font-bold hover:bg-red-100 transition-colors"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" /> Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+
+                      {filtered.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="text-center py-12 text-slate-400">
+                            <Users className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                            <p className="font-semibold text-sm">No users match your search</p>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </main>
         )}
       </div>
 
       {/* Add User Modal */}
-      {isAddModalOpen && (
-        <AddUserModal
-          onClose={() => setIsAddModalOpen(false)}
-          onAdd={(newUser) => {
-            setUsers([newUser, ...users]);
-            setToast("User added successfully.");
-            setTimeout(() => setToast(null), 3000);
-          }}
-        />
-      )}
+      {
+        isAddModalOpen && (
+          <AddUserModal
+            onClose={() => setIsAddModalOpen(false)}
+            onAdd={(data) => {
+              axiosInstance.post("/api/auth/signup", data)
+                .then(res => {
+                  // After signup, we might need to fetch the full list again to get the ID, 
+                  // or the backend might return the user in the data field of ApiResponse.
+                  setToast("User created successfully in database.");
+                  // Refresh users list to get the real ID and status
+                  axiosInstance.get("/api/users").then(res2 => {
+                    const mapped = res2.data.map(u => ({
+                      id: u.id,
+                      name: u.fullName || u.email.split("@")[0],
+                      email: u.email,
+                      role: u.role || "USER",
+                      status: u.status || "Active",
+                      joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Recently"
+                    }));
+                    setUsers(mapped);
+                  });
+                })
+                .catch(err => {
+                  console.error("Add user failed:", err);
+                  setToast("Failed to create user: " + (err.response?.data?.message || err.message));
+                });
+              setTimeout(() => setToast(null), 3000);
+            }}
+          />
+        )
+      }
 
       {/* Toast */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-slate-900 text-white text-sm font-semibold px-5 py-3.5 rounded-2xl shadow-2xl border border-white/10">
-          <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
-          {toast}
-          <button onClick={() => setToast(null)} className="ml-2 text-slate-500 hover:text-white transition-colors">
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
-    </div>
+      {
+        toast && (
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-slate-900 text-white text-sm font-semibold px-5 py-3.5 rounded-2xl shadow-2xl border border-white/10">
+            <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" />
+            {toast}
+            <button onClick={() => setToast(null)} className="ml-2 text-slate-500 hover:text-white transition-colors">
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )
+      }
+    </div >
   );
 }
