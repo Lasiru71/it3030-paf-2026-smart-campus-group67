@@ -7,7 +7,7 @@ import {
   Trash2, Edit, LogOut, Bell, Search, TrendingUp, Filter,
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
   Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
-  FileText
+  FileText, LayoutGrid
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
 import axiosInstance from "../services/axiosInstance";
@@ -63,7 +63,12 @@ const avatarGradient = {
 const navSections = [
   { header: "MAIN", items: [{ icon: Home, label: "Overview" }] },
   { header: "DIRECTORY", items: [{ icon: Users, label: "Users" }] },
-  { header: "ACADEMIC", items: [{ icon: BookOpen, label: "Bookings" }] },
+  {
+    header: "ACADEMIC", items: [
+      { icon: LayoutGrid, label: "Facilities" },
+      { icon: BookOpen, label: "Bookings" },
+    ]
+  },
   { header: "BUSINESS", items: [{ icon: FileText, label: "Reports" }] },
   {
     header: "ADMIN", items: [
@@ -755,7 +760,55 @@ export default function AdminDashboardPage() {
         {/* Body — conditionally render panels */}
         {activeNav === "Settings" && <SettingsPanel displayName={displayName} />}
 
-        {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports") && (
+        {activeNav === "Facilities" && (
+          <main className="flex-1 overflow-y-auto bg-slate-50 p-8 space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden p-8 text-center">
+              <div className="h-16 w-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <LayoutGrid className="h-8 w-8 text-blue-600" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 mb-2">Facility Management</h2>
+              <p className="text-slate-500 max-w-md mx-auto">
+                This module is currently being optimized. Soon you will be able to manage all campus facilities, laboratories, and lecture halls from this unified interface.
+              </p>
+              <div className="mt-8 flex justify-center gap-4">
+                <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Facilities</p>
+                  <p className="text-xl font-black text-slate-800">24 Active</p>
+                </div>
+                <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Capacity</p>
+                  <p className="text-xl font-black text-slate-800">85% In Use</p>
+                </div>
+              </div>
+            </div>
+          </main>
+        )}
+
+        {activeNav === "Bookings" && (
+          <main className="flex-1 overflow-y-auto bg-slate-50 p-8 space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden p-8 text-center">
+              <div className="h-16 w-16 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="h-8 w-8 text-violet-600" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 mb-2">Booking Management</h2>
+              <p className="text-slate-500 max-w-md mx-auto">
+                Comprehensive booking oversight. Monitor reservations, handle cancellations, and view schedule distributions across all campus resources.
+              </p>
+              <div className="mt-8 flex justify-center gap-4">
+                <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Active Bookings</p>
+                  <p className="text-xl font-black text-slate-800">347</p>
+                </div>
+                <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Pending</p>
+                  <p className="text-xl font-black text-slate-800">14 Actions</p>
+                </div>
+              </div>
+            </div>
+          </main>
+        )}
+
+        {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports" || activeNav === "Bookings") && (
           <main className={`flex-1 overflow-y-auto px-8 py-7 bg-slate-50 ${(activeNav === "Overview" || activeNav === "Analytics" || activeNav === "Reports") ? "space-y-7" : ""} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
 
             {/* ─ Colorful Stats ─ */}
