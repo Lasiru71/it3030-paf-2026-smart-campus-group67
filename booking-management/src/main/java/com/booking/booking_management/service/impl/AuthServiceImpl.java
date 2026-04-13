@@ -25,10 +25,10 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthServiceImpl(UserRepository userRepository, 
-                           PasswordEncoder passwordEncoder, 
-                           JwtService jwtService, 
-                           AuthenticationManager authenticationManager) {
+    public AuthServiceImpl(UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -37,6 +37,18 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ApiResponse signup(SignupRequest request) {
+        // Email validation: Only @gmail.com
+        if (!request.getEmail().toLowerCase().endsWith("@gmail.com")) {
+            throw new IllegalArgumentException("Only @gmail.com emails are permitted.");
+        }
+
+        // Password validation: Min 6 characters, uppercase, lowercase, and numeric
+        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{6,}$";
+        if (!request.getPassword().matches(passwordRegex)) {
+            throw new IllegalArgumentException(
+                    "Password must be at least 6 characters, and include uppercase, lowercase, and a number.");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException("Email is already registered");
         }
@@ -44,16 +56,20 @@ public class AuthServiceImpl implements AuthService {
         Role role;
         try {
             role = Role.valueOf(request.getRole().toUpperCase());
+            if (role == Role.ADMIN) {
+                throw new IllegalArgumentException("Registration as ADMIN is not permitted.");
+            }
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid role specified");
+            throw new IllegalArgumentException(e.getMessage() != null && e.getMessage().contains("ADMIN")
+                    ? e.getMessage()
+                    : "Invalid role specified");
         }
 
         User user = new User(
                 request.getFullName(),
                 request.getEmail(),
                 passwordEncoder.encode(request.getPassword()),
-                role
-        );
+                role);
 
         userRepository.save(user);
 
@@ -64,8 +80,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponse login(LoginRequest request) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         } catch (AuthenticationException e) {
             throw new InvalidCredentialsException("Invalid email or password");
         }
@@ -74,12 +89,11 @@ public class AuthServiceImpl implements AuthService {
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         // Create user details for JWT generation
-        org.springframework.security.core.userdetails.User userDetails = 
-            new org.springframework.security.core.userdetails.User(
-                    user.getEmail(),
-                    user.getPassword(),
-                    java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-            );
+        org.springframework.security.core.userdetails.User userDetails = new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_" + user.getRole().name())));
 
         String jwtToken = jwtService.generateToken(userDetails);
 
@@ -88,7 +102,6 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 user.getFullName(),
                 user.getEmail(),
-                user.getRole().name()
-        );
+                user.getRole().name());
     }
 }

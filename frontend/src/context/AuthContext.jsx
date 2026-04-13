@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }) => {
   // Convenience role booleans for easy use in components
   const isAdmin = userRole === "ADMIN";
   const isTechnician = userRole === "TECHNICIAN";
+  const isStaff = userRole === "STAFF";
   const isUser = userRole === "USER";
 
   return (
@@ -49,6 +50,7 @@ export const AuthProvider = ({ children }) => {
         userRole,
         isAdmin,
         isTechnician,
+        isStaff,
         isUser,
       }}
     >

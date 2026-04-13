@@ -349,6 +349,20 @@ function AddUserModal({ onClose, onAdd }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Email Validation
+    if (!formData.email.endsWith("@gmail.com")) {
+      alert("Only @gmail.com emails are allowed.");
+      return;
+    }
+
+    // Password Validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      alert("Password must be at least 6 characters, and include uppercase, lowercase, and a number.");
+      return;
+    }
+
     onAdd({
       fullName: formData.name,
       email: formData.email,

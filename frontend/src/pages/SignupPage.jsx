@@ -28,9 +28,11 @@ const SignupPage = () => {
     const errs = {};
     if (!form.fullName.trim()) errs.fullName = "Full name is required.";
     if (!form.email) errs.email = "Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Enter a valid email.";
+    else if (!/^[^\s@]+@gmail\.com$/.test(form.email)) errs.email = "Only @gmail.com emails are allowed.";
     if (!form.password) errs.password = "Password is required.";
-    else if (form.password.length < 6) errs.password = "Password must be at least 6 characters.";
+    else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(form.password)) {
+      errs.password = "Password must be at least 6 characters, and include uppercase, lowercase, and a number.";
+    }
     if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords do not match.";
     return errs;
   };
@@ -71,9 +73,9 @@ const SignupPage = () => {
         <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-sky-400/10 rounded-full blur-[160px] animate-pulse" />
         <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[160px] opacity-20" />
       </div>
- 
+
       {/* Back to Home Button */}
-      <button 
+      <button
         onClick={() => navigate(ROUTES.HOME)}
         className="absolute top-6 left-6 lg:top-10 lg:left-10 z-[60] flex items-center gap-2 text-white/60 hover:text-white transition-all font-bold group"
       >
@@ -90,11 +92,11 @@ const SignupPage = () => {
             <Logo />
           </div>
           <h1 className="text-5xl xl:text-6xl font-black mb-8 leading-[1.1] tracking-tight">
-            Join the Future of <br/>
+            Join the Future of <br />
             <span className="text-sky-300">Campus Management.</span>
           </h1>
           <p className="text-xl text-blue-100/80 mb-12 leading-relaxed">
-            Create an account to join thousands of students and staff members 
+            Create an account to join thousands of students and staff members
             in optimizing university resources today. It's fast, free, and smart.
           </p>
 
@@ -200,7 +202,7 @@ const SignupPage = () => {
                     className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 bg-slate-50/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition-all appearance-none cursor-pointer"
                   >
                     <option value="USER">Student</option>
-                    <option value="ADMIN">Staff / Admin</option>
+                    <option value="STAFF">Staff</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400 group-hover:text-blue-500 transition-colors">
                     <UserPlus className="h-4 w-4" />
@@ -224,7 +226,7 @@ const SignupPage = () => {
               </p>
             </div>
           </div>
-          
+
           <p className="text-center text-blue-100/30 text-[10px] uppercase tracking-[0.2em] font-bold lg:text-left lg:ml-2">
             CampusReserve • Secured Gateway
           </p>
