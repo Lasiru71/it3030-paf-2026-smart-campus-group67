@@ -7,7 +7,7 @@ import {
   Trash2, Edit, LogOut, Bell, Search, TrendingUp, Filter,
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
   Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
-  FileText, Plus, Minus, MessageSquare
+  FileText, Plus, Minus, MessageSquare, CalendarDays
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
 import { bookingService } from "../services/bookingService";
@@ -430,11 +430,10 @@ function BookingsPanel({ onGenerateReport }) {
       .then(res => {
         // Sort: newest submission first
         const sorted = [...res].sort((a, b) => {
-          // Sort by creation time if available, otherwise by ID (likely alphabetical/incremental)
           if (a.createdAt && b.createdAt) {
             return new Date(b.createdAt) - new Date(a.createdAt);
           }
-          return b.id.localeCompare(a.id);
+          return (b.id || "").localeCompare(a.id || "");
         });
         setBookings(sorted);
         setLoading(false);
@@ -465,12 +464,16 @@ function BookingsPanel({ onGenerateReport }) {
     }
   };
 
-  const handleApproveClick = (bookingId) => {
-    setApprovingId(bookingId);
-    setNewSpaces("");
-  };
+  // Group bookings by date
+  const groupedBookings = bookings.reduce((groups, booking) => {
+    const date = booking.bookingDate || "Undated";
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(booking);
+    return groups;
+  }, {});
 
-
+  // Sort dates (newest first)
+  const sortedDates = Object.keys(groupedBookings).sort((a, b) => b.localeCompare(a));
 
   const getStatusColor = (status) => {
     if (status === "APPROVED") return "bg-emerald-100 text-emerald-700 border-emerald-200";
@@ -480,94 +483,124 @@ function BookingsPanel({ onGenerateReport }) {
 
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-2xl font-black text-slate-900">Academic Bookings</h2>
-          <p className="text-sm text-slate-500">Manage facility and resource reservations</p>
+          <p className="text-sm text-slate-500">Facility reservations grouped by schedule</p>
         </div>
         <button 
           onClick={() => onGenerateReport(bookings)}
           className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-lg transition-all active:scale-95 group"
         >
           <Download className="h-4 w-4 group-hover:-translate-y-0.5 transition-transform" />
-          Generate Report
+          Full Report (All Dates)
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="p-10 text-center text-slate-500 font-medium">Loading bookings...</div>
-        ) : bookings.length === 0 ? (
-          <div className="p-10 text-center text-slate-500 font-medium">No bookings found.</div>
-        ) : (
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                <th className="p-4">Resource</th>
-                <th className="p-4">Requested By</th>
-                <th className="p-4">Date & Time</th>
-                <th className="p-4">Duration</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {bookings.map(booking => (
-                <tr key={booking.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-4">
-                    <p className="font-bold text-sm text-slate-800">{booking.resourceName}</p>
-                    <p className="text-xs text-slate-500">{booking.members} members</p>
-                  </td>
-                  <td className="p-4">
-                    <p className="text-sm font-semibold text-slate-700">{booking.userEmail}</p>
-                  </td>
-                  <td className="p-4">
-                    <p className="text-sm font-semibold text-slate-700">{booking.bookingDate}</p>
-                    <p className="text-xs text-slate-500">{booking.bookingTime}</p>
-                  </td>
-                  <td className="p-4 text-sm font-semibold text-slate-700">
-                    {booking.durationHours}h {booking.durationMinutes > 0 ? `${booking.durationMinutes}m` : ""}
-                  </td>
-                  <td className="p-4">
-                    <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${getStatusColor(booking.status)}`}>
-                      {booking.status || "PENDING"}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                      {(booking.status === "PENDING" || !booking.status) && (
+      {loading ? (
+        <div className="bg-white rounded-3xl border border-slate-200 p-20 text-center text-slate-500 font-medium">
+          Loading bookings...
+        </div>
+      ) : sortedDates.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-20 text-center shadow-sm">
+          <CalendarDays className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+          <p className="text-lg font-bold text-slate-500">No Bookings Yet</p>
+          <p className="text-sm text-slate-400 mt-1">Once students start booking, they will appear here by date.</p>
+        </div>
+      ) : (
+        <div className="space-y-10">
+          {sortedDates.map(date => (
+            <div key={date} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex items-center justify-between mb-4 px-2">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-200 text-white">
+                    <CalendarDays className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-900">{date}</h3>
+                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">
+                      {groupedBookings[date].length} Total Reservations
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => onGenerateReport(groupedBookings[date])}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-blue-500 hover:text-blue-600 text-slate-600 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all shadow-sm hover:shadow-md"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Report for {date}
+                </button>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                      <th className="px-6 py-4">Resource</th>
+                      <th className="px-6 py-4">Requested By</th>
+                      <th className="px-6 py-4">Time</th>
+                      <th className="px-6 py-4">Duration</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {groupedBookings[date].map(booking => (
+                      <tr key={booking.id} className="hover:bg-slate-50/50 transition-colors group">
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-sm text-slate-800">{booking.resourceName}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{booking.members} members</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-semibold text-slate-700">{booking.userEmail}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-bold text-slate-700">{booking.bookingTime}</p>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-semibold text-slate-600">
+                          {booking.durationHours}h {booking.durationMinutes > 0 ? `${booking.durationMinutes}m` : ""}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusColor(booking.status)}`}>
+                            {booking.status || "PENDING"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
                           <div className="flex justify-end items-center gap-2">
+                            {(booking.status === "PENDING" || !booking.status) && (
+                              <>
+                                <button 
+                                  onClick={() => handleStatusChange(booking.id, "APPROVED")} 
+                                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-sm transition-all shadow-emerald-200"
+                                >
+                                  Approve
+                                </button>
+                                <button 
+                                  onClick={() => handleStatusChange(booking.id, "REJECTED")} 
+                                  className="px-4 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            )}
                             <button 
-                              onClick={() => handleStatusChange(booking.id, "APPROVED")} 
-                              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm transition-all shadow-emerald-200"
+                              onClick={() => handleDelete(booking.id)}
+                              className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                              title="Delete Booking"
                             >
-                              Approve
-                            </button>
-                            <button 
-                              onClick={() => handleStatusChange(booking.id, "REJECTED")} 
-                              className="px-4 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold rounded-xl transition-all"
-                            >
-                              Reject
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
-                      )}
-                      
-                      {/* Global Delete Button */}
-                      <div className="flex justify-end mt-2">
-                        <button 
-                          onClick={() => handleDelete(booking.id)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group"
-                          title="Delete Booking"
-                        >
-                          <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                        </button>
-                      </div>
-                    </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
@@ -737,6 +770,26 @@ function SpaceManagementPanel() {
       .catch(err => console.error("Quick adjust failed", err));
   };
 
+  const handleReset = (res) => {
+    if (window.confirm(`Reset ${res.name} to full capacity (${res.capacity})? This will also set status to Available.`)) {
+      axiosInstance.patch(`/api/resources/${res.id}`, { 
+        availableSpaces: res.capacity, 
+        status: "Available" 
+      })
+      .then(() => {
+        setResources(prev => prev.map(r => r.id === res.id ? { 
+          ...r, 
+          availableSpaces: res.capacity, 
+          status: "Available" 
+        } : r));
+      })
+      .catch(err => {
+        console.error("Reset failed", err);
+        alert("Reset failed. Please try again.");
+      });
+    }
+  };
+
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
       <div className="flex items-center justify-between mb-8">
@@ -844,6 +897,16 @@ function SpaceManagementPanel() {
                             style={{ width: `${(res.availableSpaces / res.capacity) * 100}%` }}
                           />
                         </div>
+
+                        {/* Reset Button */}
+                        <button 
+                          onClick={() => handleReset(res)}
+                          className="ml-4 p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all group flex items-center gap-1.5 border border-blue-100"
+                          title="Reset to Full Capacity"
+                        >
+                          <RefreshCw className="h-3 w-3 group-active:rotate-180 transition-transform duration-500" />
+                          <span className="text-[10px] font-black uppercase tracking-wider hidden lg:block">Reset</span>
+                        </button>
                       </div>
                     )}
                   </td>
