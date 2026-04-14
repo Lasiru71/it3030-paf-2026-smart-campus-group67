@@ -17,6 +17,7 @@ import AdminDashboardPage from "../pages/AdminDashboardPage";
 import AdminProfilePage from "../pages/AdminProfilePage";
 import TechnicianDashboardPage from "../pages/TechnicianDashboardPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage";
+import BookingPage from "../pages/BookingPage";
 
 const AppRouter = () => {
   return (
@@ -34,6 +35,10 @@ const AppRouter = () => {
         <Route
           path={ROUTES.RESOURCES}
           element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>}
+        />
+        <Route
+          path={ROUTES.BOOKING}
+          element={<ProtectedRoute><BookingPage /></ProtectedRoute>}
         />
         <Route
           path={ROUTES.MY_BOOKINGS}

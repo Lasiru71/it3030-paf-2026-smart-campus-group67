@@ -158,11 +158,10 @@ const MyBookingsPage = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                activeTab === tab
+              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${activeTab === tab
                   ? "bg-blue-700 text-white border-blue-700 shadow-sm shadow-blue-200"
                   : "bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-blue-600"
-              }`}
+                }`}
             >
               {tab === "IN_PROGRESS" ? "In Progress" : tab}
             </button>
