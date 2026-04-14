@@ -17,5 +17,11 @@ export const bookingService = {
   updateBookingStatus: async (id, status) => {
     const response = await axiosInstance.patch(`/api/bookings/${id}/status`, { status });
     return response.data;
+  },
+
+  // Update booking message
+  updateBookingMessage: async (id, message) => {
+    const response = await axiosInstance.patch(`/api/bookings/${id}/message`, { message });
+    return response.data;
   }
 };

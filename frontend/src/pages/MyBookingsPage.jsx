@@ -14,6 +14,11 @@ const STATUS_STYLE = {
     icon: <CheckCircle className="h-3.5 w-3.5" />,
     dot: "bg-emerald-500",
   },
+  APPROVED: {
+    badge: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    icon: <CheckCircle className="h-3.5 w-3.5" />,
+    dot: "bg-emerald-500",
+  },
   PENDING: {
     badge: "bg-amber-100 text-amber-700 border-amber-200",
     icon: <Clock className="h-3.5 w-3.5" />,
@@ -78,6 +83,7 @@ const MyBookingsPage = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [messageInputs, setMessageInputs] = useState({});
 
   const displayName = auth?.fullName || auth?.email || "Student";
 
@@ -88,6 +94,14 @@ const MyBookingsPage = () => {
           // Filter only the authenticated user's bookings
           const myBookings = data.filter(b => b.userEmail === auth.email);
           setBookings(myBookings);
+          
+          // Pre-fill message inputs
+          const initialInputs = {};
+          myBookings.forEach(b => {
+            initialInputs[b.id || b._id] = b.message || "";
+          });
+          setMessageInputs(initialInputs);
+          
           setLoading(false);
         })
         .catch(err => {
@@ -96,6 +110,58 @@ const MyBookingsPage = () => {
         });
     }
   }, [auth?.email]);
+
+  const handleCancel = async (booking) => {
+    // 1. Log the entire object to see structure
+    console.log("Full booking object:", booking);
+    
+    // 2. Extra robust ID detection
+    const bookingId = booking.id || booking._id; 
+    
+    alert(`Action Started: Attempting to cancel booking ${bookingId || "UNKNOWN ID"}`);
+    
+    if (!bookingId) {
+      alert("Error: No ID found on booking object! Check console.");
+      return;
+    }
+
+    if (window.confirm("Confirm cancellation?")) {
+      try {
+        console.log(`Sending PATCH request for booking: ${bookingId}`);
+        const result = await bookingService.updateBookingStatus(bookingId, "CANCELLED");
+        
+        console.log("API Result:", result);
+        alert(`SUCCESS: Booking ${bookingId} has been cancelled.`);
+        
+        // Update local state
+        setBookings(prev => 
+          prev.map(b => (b.id === bookingId || b._id === bookingId) ? { ...b, status: "CANCELLED" } : b)
+        );
+      } catch (err) {
+        console.error("Failed to cancel booking", err);
+        const status = err.response?.status;
+        const msg = err.response?.data?.message || err.message;
+        alert(`FAILED: Status ${status || "Unknown"} - ${msg}`);
+      }
+    }
+  };
+
+  const handleMessageChange = (id, val) => {
+    setMessageInputs(prev => ({ ...prev, [id]: val }));
+  };
+
+  const handleMessageSubmit = async (booking) => {
+    const id = booking.id || booking._id;
+    const msg = messageInputs[id];
+    try {
+      await bookingService.updateBookingMessage(id, msg);
+      setBookings(prev => prev.map(b => (b.id === id || b._id === id) ? { ...b, message: msg } : b));
+      alert("Message updated successfully!");
+    } catch (err) {
+      console.error("Failed to update message", err);
+      alert("Failed to submit message.");
+    }
+  };
 
   const filtered = bookings.filter((b) => {
     const matchesSearch =
@@ -232,6 +298,33 @@ const MyBookingsPage = () => {
                           {booking.location}
                         </span>
                       </div>
+
+                      {/* Message Box Section */}
+                      <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                        <label className="text-[10px] uppercase font-black text-slate-400 mb-1.5 block tracking-wider">
+                          Message to Administrator
+                        </label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text"
+                            placeholder="Type a message (e.g. Need projector, special request)..."
+                            value={messageInputs[booking.id || booking._id] || ""}
+                            onChange={(e) => handleMessageChange(booking.id || booking._id, e.target.value)}
+                            className="flex-1 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all"
+                          />
+                          <button 
+                            onClick={() => handleMessageSubmit(booking)}
+                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-lg transition-colors shadow-sm"
+                          >
+                            Submit
+                          </button>
+                        </div>
+                        {booking.message && (
+                          <p className="mt-2 text-[10px] text-blue-600 font-medium italic">
+                            Current: "{booking.message}"
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -239,11 +332,15 @@ const MyBookingsPage = () => {
                   <div className="flex items-center gap-3 sm:flex-col sm:items-end shrink-0">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${style.badge}`}>
                       {style.icon}
-                      {booking.status.replace("_", " ")}
+                      {(booking.status || "PENDING").replace("_", " ")}
                     </span>
                     {booking.status !== "CANCELLED" && booking.status !== "IN_PROGRESS" && (
-                      <button className="text-xs text-red-500 hover:text-red-700 font-semibold hover:underline transition-colors">
-                        Cancel
+                      <button 
+                        onClick={() => handleCancel(booking)}
+                        className="mt-2 px-4 py-2 bg-orange-50 text-orange-600 hover:bg-orange-600 hover:text-white border border-orange-200 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm flex items-center gap-2 group ring-2 ring-orange-400/20"
+                      >
+                        <XCircle className="h-3.5 w-3.5 group-hover:rotate-90 transition-transform" />
+                        Cancel Booking
                       </button>
                     )}
                   </div>
