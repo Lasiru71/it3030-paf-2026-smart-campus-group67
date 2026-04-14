@@ -17,6 +17,7 @@ public class Booking {
     private String bookingTime;
     private String userEmail;
     private String status; // PENDING, APPROVED, REJECTED
+    private String message; 
     private boolean seatsDeducted = false;
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -54,6 +55,9 @@ public class Booking {
 
     public boolean isSeatsDeducted() { return seatsDeducted; }
     public void setSeatsDeducted(boolean seatsDeducted) { this.seatsDeducted = seatsDeducted; }
+
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

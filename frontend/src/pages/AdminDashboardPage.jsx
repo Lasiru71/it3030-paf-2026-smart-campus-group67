@@ -7,7 +7,7 @@ import {
   Trash2, Edit, LogOut, Bell, Search, TrendingUp, Filter,
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
   Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
-  FileText, Plus, Minus
+  FileText, Plus, Minus, MessageSquare
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
 import { bookingService } from "../services/bookingService";
@@ -67,6 +67,7 @@ const navSections = [
   { header: "DIRECTORY", items: [{ icon: Users, label: "Users" }] },
   { header: "ACADEMIC", items: [
       { icon: BookOpen, label: "Bookings" },
+      { icon: MessageSquare, label: "Message Box" },
       { icon: Database, label: "Space Management" }
     ] 
   },
@@ -420,7 +421,7 @@ function AddUserModal({ onClose, onAdd }) {
 }
 
 // ─── Bookings Panel ──────────────────────────────────────────
-function BookingsPanel() {
+function BookingsPanel({ onGenerateReport }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -464,6 +465,13 @@ function BookingsPanel() {
           <h2 className="text-2xl font-black text-slate-900">Academic Bookings</h2>
           <p className="text-sm text-slate-500">Manage facility and resource reservations</p>
         </div>
+        <button 
+          onClick={() => onGenerateReport(bookings)}
+          className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl shadow-lg transition-all active:scale-95 group"
+        >
+          <Download className="h-4 w-4 group-hover:-translate-y-0.5 transition-transform" />
+          Generate Report
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -529,6 +537,88 @@ function BookingsPanel() {
           </table>
         )}
       </div>
+    </main>
+  );
+}
+
+// ─── Message Box Panel ───────────────────────────────────────
+function MessageBoxPanel() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    bookingService.getAllBookings()
+      .then(res => {
+        setBookings(res);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch bookings", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const messages = bookings.filter(b => b.message && b.message.trim() !== "");
+
+  return (
+    <main className="flex-1 overflow-y-auto bg-slate-50 p-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Communication Center</h2>
+          <p className="text-sm text-slate-500">Review student messages and special requests</p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 mb-6">
+        <MessageSquare className="h-5 w-5 text-blue-600" />
+        <h3 className="text-lg font-black text-slate-900">Message Box</h3>
+      </div>
+      
+      {loading ? (
+        <div className="p-10 text-center text-slate-500 font-medium bg-white rounded-2xl border border-slate-200">
+          Loading messages...
+        </div>
+      ) : messages.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-16 text-center shadow-sm">
+          <Mail className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+          <p className="text-base font-bold text-slate-500">Safe and Sound</p>
+          <p className="text-sm text-slate-400 mt-1">No special requests from students at the moment.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {messages.map(booking => (
+            <div key={`msg-${booking.id}`} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
+              <div className="flex items-center justify-between mb-4">
+                <div className="px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-full border border-blue-100 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-colors">
+                  {booking.resourceName}
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                  <Clock className="h-3 w-3" />
+                  {booking.bookingDate}
+                </div>
+              </div>
+              <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 mb-5 min-h-[100px] flex flex-col justify-center">
+                <p className="text-sm text-slate-700 font-medium leading-relaxed italic">
+                  "{booking.message}"
+                </p>
+              </div>
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-50">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-xs font-black text-slate-500 border border-slate-200">
+                  {booking.userEmail.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-800 truncate leading-none mb-1">
+                    {booking.userEmail.split('@')[0]}
+                  </p>
+                  <p className="text-[10px] text-slate-400 truncate">
+                    {booking.userEmail}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
@@ -905,8 +995,26 @@ export default function AdminDashboardPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const generateBookingPDF = () => {
+  const generateBookingPDF = async (customData = null) => {
+    setToast("Preparing your report... ⏳");
+    // If we have custom data (from BookingsPanel), use it. Otherwise, fetch fresh data.
+    let bookingsToReport = customData;
+    
+    if (!bookingsToReport) {
+      try {
+        const response = await bookingService.getAllBookings();
+        bookingsToReport = response;
+      } catch (err) {
+        console.error("Report fetch failed", err);
+        setToast("Error: Could not fetch bookings for report.");
+        setTimeout(() => setToast(null), 3000);
+        return;
+      }
+    }
+
     const doc = new jsPDF();
+    
+    // Header
     doc.setFillColor(37, 99, 235);
     doc.rect(0, 0, 210, 40, "F");
     doc.setTextColor(255, 255, 255);
@@ -916,30 +1024,40 @@ export default function AdminDashboardPage() {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 30, { align: "center" });
+    
+    // Overview Section
     doc.setTextColor(30, 41, 59);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text("Booking Overview", 14, 55);
+    
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    doc.text("Active Bookings: 347", 14, 65);
-    doc.text("Pending Approvals: 14", 14, 72);
-    doc.text("Completed This Month: 289", 14, 79);
+    doc.text(`Total Records in Report: ${bookingsToReport.length}`, 14, 65);
+    doc.text(`Pending Approvals: ${bookingsToReport.filter(b => b.status === "PENDING" || !b.status).length}`, 14, 72);
+    doc.text(`Approved Bookings: ${bookingsToReport.filter(b => b.status === "APPROVED").length}`, 14, 79);
+
+    // Table
+    const tableBody = bookingsToReport.map((b, i) => [
+      (i + 1).toString(),
+      b.resourceName || "N/A",
+      b.userEmail || "N/A",
+      b.bookingDate || "N/A",
+      b.bookingTime || "N/A",
+      b.status || "PENDING"
+    ]);
+
     autoTable(doc, {
       startY: 95,
       head: [["#", "Facility", "Booked By", "Date", "Time", "Status"]],
-      body: [
-        ["1", "Auditorium A", "Hasindu C.", "2026-04-12", "09:00-11:00", "Approved"],
-        ["2", "Lab Room 3", "Kasun M.", "2026-04-12", "14:00-16:00", "Pending"],
-        ["3", "Conference Hall", "Amali S.", "2026-04-13", "10:00-12:00", "Approved"],
-        ["4", "Sports Complex", "Nadee F.", "2026-04-13", "15:00-17:00", "Pending"],
-        ["5", "Library Room 2", "Lasiru P.", "2026-04-14", "08:00-10:00", "Approved"],
-      ],
+      body: tableBody.length > 0 ? tableBody : [["-", "No records found", "-", "-", "-", "-"]],
       theme: "grid",
       headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
       alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 9 }
     });
-    doc.save("CampusReserve_Booking_Report.pdf");
+
+    doc.save(`CampusReserve_Booking_Report_${new Date().toISOString().split('T')[0]}.pdf`);
     setToast("Booking report downloaded! 📊");
     setTimeout(() => setToast(null), 3000);
   };
@@ -1096,7 +1214,8 @@ export default function AdminDashboardPage() {
 
         {/* Body — conditionally render panels */}
         {activeNav === "Settings" && <SettingsPanel displayName={displayName} />}
-        {activeNav === "Bookings" && <BookingsPanel />}
+        {activeNav === "Bookings" && <BookingsPanel onGenerateReport={generateBookingPDF} />}
+        {activeNav === "Message Box" && <MessageBoxPanel />}
         {activeNav === "Space Management" && <SpaceManagementPanel />}
 
         {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports") && (

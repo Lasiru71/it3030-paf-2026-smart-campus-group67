@@ -93,10 +93,11 @@ public class BookingService {
     public Booking updateBookingStatus(String id, String status) {
         return bookingRepository.findById(id).map(booking -> {
             String oldStatus = booking.getStatus();
+            System.out.println("DEBUG: Transitioning booking " + id + " from " + oldStatus + " to " + status);
             booking.setStatus(status);
             
-            // If rejected, restore seats
-            if ("REJECTED".equals(status) && !"REJECTED".equals(oldStatus)) {
+            // If rejected or cancelled, restore seats
+            if (("REJECTED".equals(status) || "CANCELLED".equals(status)) && (!"REJECTED".equals(oldStatus) && !"CANCELLED".equals(oldStatus))) {
                 if (booking.isSeatsDeducted()) {
                     resourceRepository.findById(booking.getResourceId()).ifPresent(res -> {
                         res.setAvailableSpaces(res.getAvailableSpaces() + booking.getMembers());
@@ -127,5 +128,12 @@ public class BookingService {
             }
             bookingRepository.deleteById(id);
         });
+    }
+
+    public Booking updateBookingMessage(String id, String message) {
+        return bookingRepository.findById(id).map(booking -> {
+            booking.setMessage(message);
+            return bookingRepository.save(booking);
+        }).orElseThrow(() -> new RuntimeException("Booking not found"));
     }
 }
