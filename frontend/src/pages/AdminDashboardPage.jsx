@@ -423,8 +423,6 @@ function AddUserModal({ onClose, onAdd }) {
 function BookingsPanel() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [approvingId, setApprovingId] = useState(null);
-  const [newSpaces, setNewSpaces] = useState("");
 
   useEffect(() => {
     bookingService.getAllBookings()
@@ -442,8 +440,6 @@ function BookingsPanel() {
     bookingService.updateBookingStatus(id, newStatus)
       .then(updatedBooking => {
         setBookings(prev => prev.map(b => b.id === id ? { ...b, status: updatedBooking.status } : b));
-        setApprovingId(null);
-        setNewSpaces("");
       })
       .catch(err => console.error("Update failed", err));
   };
@@ -453,23 +449,7 @@ function BookingsPanel() {
     setNewSpaces("");
   };
 
-  const confirmApproval = (booking) => {
-    if (!newSpaces || isNaN(newSpaces)) {
-      alert("Please enter a valid number for available spaces.");
-      return;
-    }
 
-    // 1. Update Resource Spaces
-    resourceService.updateAvailableSpaces(booking.resourceId, parseInt(newSpaces))
-      .then(() => {
-        // 2. Update Booking Status
-        handleStatusChange(booking.id, "APPROVED");
-      })
-      .catch(err => {
-        console.error("Failed to update resource spaces", err);
-        alert("Error updating resource spaces. Check console.");
-      });
-  };
 
   const getStatusColor = (status) => {
     if (status === "APPROVED") return "bg-emerald-100 text-emerald-700 border-emerald-200";
@@ -527,46 +507,20 @@ function BookingsPanel() {
                   </td>
                   <td className="p-4 text-right">
                     {(booking.status === "PENDING" || !booking.status) && (
-                       <div className="flex justify-end items-center gap-2">
-                        {approvingId === booking.id ? (
-                          <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200 animate-in fade-in slide-in-from-right-4 transition-all duration-300">
-                            <input 
-                              type="number" 
-                              placeholder="New Spaces"
-                              value={newSpaces}
-                              onChange={(e) => setNewSpaces(e.target.value)}
-                              className="w-24 px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                            <button 
-                              onClick={() => confirmApproval(booking)}
-                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              Confirm
-                            </button>
-                            <button 
-                              onClick={() => setApprovingId(null)}
-                              className="p-1 px-2 text-slate-400 hover:text-slate-600 transition-colors"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            <button 
-                              onClick={() => handleApproveClick(booking.id)} 
-                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors"
-                            >
-                              Approve
-                            </button>
-                            <button 
-                              onClick={() => handleStatusChange(booking.id, "REJECTED")} 
-                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200 transition-colors"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                       </div>
+                        <div className="flex justify-end items-center gap-2">
+                          <button 
+                            onClick={() => handleStatusChange(booking.id, "APPROVED")} 
+                            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm transition-all shadow-emerald-200"
+                          >
+                            Approve
+                          </button>
+                          <button 
+                            onClick={() => handleStatusChange(booking.id, "REJECTED")} 
+                            className="px-4 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold rounded-xl transition-all"
+                          >
+                            Reject
+                          </button>
+                        </div>
                     )}
                   </td>
                 </tr>

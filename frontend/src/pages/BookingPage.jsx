@@ -35,6 +35,13 @@ const BookingPage = () => {
     setIsSubmitting(true);
     setError("");
     
+    // Validate members against available spaces
+    if (resource.availableSpaces !== undefined && formData.members > resource.availableSpaces) {
+      setError(`Cannot book more than ${resource.availableSpaces} available seats.`);
+      setIsSubmitting(false);
+      return;
+    }
+    
     try {
       const payload = {
         resourceId,
@@ -131,8 +138,13 @@ const BookingPage = () => {
                 
                 {/* Number of Members */}
                 <div className="group">
-                  <label className="block text-sm font-extrabold text-black mb-2 uppercase tracking-wide">
-                    Number of Members
+                  <label className="block text-sm font-extrabold text-black mb-2 uppercase tracking-wide flex justify-between">
+                    <span>Number of Members</span>
+                    {resource.availableSpaces !== undefined && (
+                      <span className="text-emerald-600 font-black">
+                        Available: {resource.availableSpaces} seats
+                      </span>
+                    )}
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -142,6 +154,7 @@ const BookingPage = () => {
                       type="number"
                       name="members"
                       min="1"
+                      max={resource.availableSpaces || 999}
                       required
                       value={formData.members}
                       onChange={handleChange}
