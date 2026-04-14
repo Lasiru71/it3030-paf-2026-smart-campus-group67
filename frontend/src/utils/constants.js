@@ -11,6 +11,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   RESOURCES: "/resources",
+  BOOKING: "/booking/:resourceId",
   MY_BOOKINGS: "/my-bookings",
   ABOUT: "/about",
   CONTACT: "/contact",

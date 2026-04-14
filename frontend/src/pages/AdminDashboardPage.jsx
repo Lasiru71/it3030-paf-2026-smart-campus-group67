@@ -10,6 +10,7 @@ import {
   FileText
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
+import { bookingService } from "../services/bookingService";
 import axiosInstance from "../services/axiosInstance";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -413,6 +414,107 @@ function AddUserModal({ onClose, onAdd }) {
   );
 }
 
+// ─── Bookings Panel ──────────────────────────────────────────
+function BookingsPanel() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    bookingService.getAllBookings()
+      .then(res => {
+        setBookings(res);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch bookings", err);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleStatusChange = (id, newStatus) => {
+    bookingService.updateBookingStatus(id, newStatus)
+      .then(updatedBooking => {
+        setBookings(prev => prev.map(b => b.id === id ? { ...b, status: updatedBooking.status } : b));
+      })
+      .catch(err => console.error("Update failed", err));
+  };
+
+  const getStatusColor = (status) => {
+    if (status === "APPROVED") return "bg-emerald-100 text-emerald-700 border-emerald-200";
+    if (status === "REJECTED") return "bg-red-100 text-red-700 border-red-200";
+    return "bg-amber-100 text-amber-700 border-amber-200";
+  };
+
+  return (
+    <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Academic Bookings</h2>
+          <p className="text-sm text-slate-500">Manage facility and resource reservations</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="p-10 text-center text-slate-500 font-medium">Loading bookings...</div>
+        ) : bookings.length === 0 ? (
+          <div className="p-10 text-center text-slate-500 font-medium">No bookings found.</div>
+        ) : (
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                <th className="p-4">Resource</th>
+                <th className="p-4">Requested By</th>
+                <th className="p-4">Date & Time</th>
+                <th className="p-4">Duration</th>
+                <th className="p-4">Status</th>
+                <th className="p-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {bookings.map(booking => (
+                <tr key={booking.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="p-4">
+                    <p className="font-bold text-sm text-slate-800">{booking.resourceName}</p>
+                    <p className="text-xs text-slate-500">{booking.members} members</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="text-sm font-semibold text-slate-700">{booking.userEmail}</p>
+                  </td>
+                  <td className="p-4">
+                    <p className="text-sm font-semibold text-slate-700">{booking.bookingDate}</p>
+                    <p className="text-xs text-slate-500">{booking.bookingTime}</p>
+                  </td>
+                  <td className="p-4 text-sm font-semibold text-slate-700">
+                    {booking.durationHours}h {booking.durationMinutes > 0 ? `${booking.durationMinutes}m` : ""}
+                  </td>
+                  <td className="p-4">
+                    <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${getStatusColor(booking.status)}`}>
+                      {booking.status || "PENDING"}
+                    </span>
+                  </td>
+                  <td className="p-4 text-right">
+                    {(booking.status === "PENDING" || !booking.status) && (
+                       <div className="flex justify-end gap-2">
+                        <button onClick={() => handleStatusChange(booking.id, "APPROVED")} className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors">
+                          Approve
+                        </button>
+                        <button onClick={() => handleStatusChange(booking.id, "REJECTED")} className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200 transition-colors">
+                          Reject
+                        </button>
+                       </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </main>
+  );
+}
+
 export default function AdminDashboardPage() {
   const { auth, logoutUser } = useAuth();
   const navigate = useNavigate();
@@ -754,6 +856,7 @@ export default function AdminDashboardPage() {
 
         {/* Body — conditionally render panels */}
         {activeNav === "Settings" && <SettingsPanel displayName={displayName} />}
+        {activeNav === "Bookings" && <BookingsPanel />}
 
         {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports") && (
           <main className={`flex-1 overflow-y-auto px-8 py-7 bg-slate-50 ${(activeNav === "Overview" || activeNav === "Analytics" || activeNav === "Reports") ? "space-y-7" : ""} animate-in fade-in slide-in-from-bottom-2 duration-500`}>

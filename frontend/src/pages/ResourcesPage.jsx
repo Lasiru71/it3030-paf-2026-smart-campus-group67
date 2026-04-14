@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Info
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
 
 const resources = [
@@ -73,6 +74,7 @@ const categories = ["All", "L Halls", "Labs", "Meeting", "Common"];
 const ResourcesPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
 
   const filteredResources = resources.filter(res => {
     const matchesCategory = activeCategory === "All" || res.category === activeCategory;
@@ -192,7 +194,10 @@ const ResourcesPage = () => {
                         <Clock className="h-3 w-3 mr-1" />
                         Next: Tomorrow 09:00
                       </div>
-                      <button className="text-blue-600 hover:text-blue-700 text-sm font-bold flex items-center gap-1">
+                      <button 
+                        onClick={() => navigate(`/booking/${res.id}`, { state: { resource: res } })}
+                        className="text-blue-600 hover:text-blue-700 text-sm font-bold flex items-center gap-1"
+                      >
                         Book Now
                         <ChevronRight className="h-4 w-4" />
                       </button>
