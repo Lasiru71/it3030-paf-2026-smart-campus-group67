@@ -1,11 +1,12 @@
 // MyBookingsPage — full booking dashboard for regular users
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { useAuth } from "../context/AuthContext";
 import {
   CalendarDays, Clock, MapPin, CheckCircle, XCircle,
   AlertCircle, Plus, Search, Filter
 } from "lucide-react";
+import { bookingService } from "../services/bookingService";
 
 const STATUS_STYLE = {
   CONFIRMED: {
@@ -75,21 +76,39 @@ const MyBookingsPage = () => {
   const { auth } = useAuth();
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("All");
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const displayName = auth?.fullName || auth?.email || "Student";
 
-  const filtered = SAMPLE_BOOKINGS.filter((b) => {
+  useEffect(() => {
+    if (auth?.email) {
+      bookingService.getAllBookings()
+        .then(data => {
+          // Filter only the authenticated user's bookings
+          const myBookings = data.filter(b => b.userEmail === auth.email);
+          setBookings(myBookings);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error("Failed to fetch user bookings", err);
+          setLoading(false);
+        });
+    }
+  }, [auth?.email]);
+
+  const filtered = bookings.filter((b) => {
     const matchesSearch =
-      b.resource.toLowerCase().includes(search.toLowerCase()) ||
-      b.id.toLowerCase().includes(search.toLowerCase());
+      b.resourceName?.toLowerCase().includes(search.toLowerCase()) ||
+      b.id?.toLowerCase().includes(search.toLowerCase());
     const matchesTab = activeTab === "All" || b.status === activeTab;
     return matchesSearch && matchesTab;
   });
 
   const stats = {
-    total: SAMPLE_BOOKINGS.length,
-    confirmed: SAMPLE_BOOKINGS.filter((b) => b.status === "CONFIRMED").length,
-    pending: SAMPLE_BOOKINGS.filter((b) => b.status === "PENDING").length,
+    total: bookings.length,
+    confirmed: bookings.filter((b) => b.status === "CONFIRMED").length,
+    pending: bookings.filter((b) => b.status === "PENDING").length,
   };
 
   return (
@@ -169,7 +188,9 @@ const MyBookingsPage = () => {
         </div>
 
         {/* Booking cards */}
-        {filtered.length === 0 ? (
+        {loading ? (
+            <div className="p-20 text-center text-slate-500 font-medium">Loading your bookings...</div>
+        ) : filtered.length === 0 ? (
           <div className="bg-white rounded-2xl border border-slate-100 py-16 text-center">
             <CalendarDays className="h-10 w-10 text-slate-300 mx-auto mb-3" />
             <p className="font-bold text-slate-500">No bookings found</p>
@@ -178,7 +199,7 @@ const MyBookingsPage = () => {
         ) : (
           <div className="grid gap-4">
             {filtered.map((booking) => {
-              const style = STATUS_STYLE[booking.status];
+              const style = STATUS_STYLE[booking.status] || STATUS_STYLE.PENDING;
               return (
                 <div
                   key={booking.id}
@@ -191,20 +212,20 @@ const MyBookingsPage = () => {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <h3 className="font-black text-slate-900 text-base">{booking.resource}</h3>
+                        <h3 className="font-black text-slate-900 text-base">{booking.resourceName}</h3>
                         <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                          {booking.type}
+                          {booking.members} members
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 font-mono mb-2">{booking.id}</p>
                       <div className="flex flex-wrap gap-4 text-sm text-slate-500">
                         <span className="flex items-center gap-1.5">
                           <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
-                          {booking.date}
+                          {booking.bookingDate}
                         </span>
                         <span className="flex items-center gap-1.5">
                           <Clock className="h-3.5 w-3.5 text-slate-400" />
-                          {booking.time}
+                          {booking.bookingTime} ({booking.durationHours}h {booking.durationMinutes}m)
                         </span>
                         <span className="flex items-center gap-1.5">
                           <MapPin className="h-3.5 w-3.5 text-slate-400" />

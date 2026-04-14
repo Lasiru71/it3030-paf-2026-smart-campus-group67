@@ -7,10 +7,11 @@ import {
   Trash2, Edit, LogOut, Bell, Search, TrendingUp, Filter,
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
   Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
-  FileText
+  FileText, Plus, Minus
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
 import { bookingService } from "../services/bookingService";
+import { resourceService } from "../services/resourceService";
 import axiosInstance from "../services/axiosInstance";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -64,7 +65,11 @@ const avatarGradient = {
 const navSections = [
   { header: "MAIN", items: [{ icon: Home, label: "Overview" }] },
   { header: "DIRECTORY", items: [{ icon: Users, label: "Users" }] },
-  { header: "ACADEMIC", items: [{ icon: BookOpen, label: "Bookings" }] },
+  { header: "ACADEMIC", items: [
+      { icon: BookOpen, label: "Bookings" },
+      { icon: Database, label: "Space Management" }
+    ] 
+  },
   { header: "BUSINESS", items: [{ icon: FileText, label: "Reports" }] },
   {
     header: "ADMIN", items: [
@@ -418,6 +423,8 @@ function AddUserModal({ onClose, onAdd }) {
 function BookingsPanel() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [approvingId, setApprovingId] = useState(null);
+  const [newSpaces, setNewSpaces] = useState("");
 
   useEffect(() => {
     bookingService.getAllBookings()
@@ -435,8 +442,33 @@ function BookingsPanel() {
     bookingService.updateBookingStatus(id, newStatus)
       .then(updatedBooking => {
         setBookings(prev => prev.map(b => b.id === id ? { ...b, status: updatedBooking.status } : b));
+        setApprovingId(null);
+        setNewSpaces("");
       })
       .catch(err => console.error("Update failed", err));
+  };
+
+  const handleApproveClick = (bookingId) => {
+    setApprovingId(bookingId);
+    setNewSpaces("");
+  };
+
+  const confirmApproval = (booking) => {
+    if (!newSpaces || isNaN(newSpaces)) {
+      alert("Please enter a valid number for available spaces.");
+      return;
+    }
+
+    // 1. Update Resource Spaces
+    resourceService.updateAvailableSpaces(booking.resourceId, parseInt(newSpaces))
+      .then(() => {
+        // 2. Update Booking Status
+        handleStatusChange(booking.id, "APPROVED");
+      })
+      .catch(err => {
+        console.error("Failed to update resource spaces", err);
+        alert("Error updating resource spaces. Check console.");
+      });
   };
 
   const getStatusColor = (status) => {
@@ -495,14 +527,268 @@ function BookingsPanel() {
                   </td>
                   <td className="p-4 text-right">
                     {(booking.status === "PENDING" || !booking.status) && (
-                       <div className="flex justify-end gap-2">
-                        <button onClick={() => handleStatusChange(booking.id, "APPROVED")} className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors">
-                          Approve
-                        </button>
-                        <button onClick={() => handleStatusChange(booking.id, "REJECTED")} className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200 transition-colors">
-                          Reject
-                        </button>
+                       <div className="flex justify-end items-center gap-2">
+                        {approvingId === booking.id ? (
+                          <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-xl border border-slate-200 animate-in fade-in slide-in-from-right-4 transition-all duration-300">
+                            <input 
+                              type="number" 
+                              placeholder="New Spaces"
+                              value={newSpaces}
+                              onChange={(e) => setNewSpaces(e.target.value)}
+                              className="w-24 px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <button 
+                              onClick={() => confirmApproval(booking)}
+                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              Confirm
+                            </button>
+                            <button 
+                              onClick={() => setApprovingId(null)}
+                              className="p-1 px-2 text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button 
+                              onClick={() => handleApproveClick(booking.id)} 
+                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg border border-emerald-200 transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button 
+                              onClick={() => handleStatusChange(booking.id, "REJECTED")} 
+                              className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-lg border border-red-200 transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
                        </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </main>
+  );
+}
+
+// ─── Space Management Panel ──────────────────────────────────
+function SpaceManagementPanel() {
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [updatingId, setUpdatingId] = useState(null);
+  const [editValue, setEditValue] = useState("");
+
+  useEffect(() => {
+    fetchResources();
+  }, []);
+
+  const fetchResources = () => {
+    setLoading(true);
+    resourceService.getAllResources()
+      .then(data => {
+        setResources(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch resources", err);
+        setLoading(false);
+      });
+  };
+
+  const handleStatusChange = (id, newStatus) => {
+    resourceService.updateResourceStatus(id, newStatus)
+      .then(() => {
+        setResources(prev => prev.map(r => {
+          if (r.id === id) {
+            const updated = { ...r, status: newStatus };
+            if (newStatus === "Maintenance" || newStatus === "Booked") {
+              updated.availableSpaces = 0;
+            }
+            return updated;
+          }
+          return r;
+        }));
+      })
+      .catch(err => console.error("Status update failed", err));
+  };
+
+  const getStatusStyle = (status) => {
+    if (status === "Available") return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    if (status === "Maintenance") return "bg-amber-50 text-amber-700 border-amber-200";
+    if (status === "Booked") return "bg-red-50 text-red-700 border-red-200";
+    return "bg-slate-50 text-slate-700 border-slate-200";
+  };
+
+  const handleUpdate = (id, currentVal) => {
+    setUpdatingId(id);
+    setEditValue(currentVal.toString());
+  };
+
+  const saveUpdate = (id) => {
+    if (isNaN(editValue) || editValue === "") {
+      alert("Please enter a valid number.");
+      return;
+    }
+
+    resourceService.updateAvailableSpaces(id, parseInt(editValue))
+      .then(() => {
+        setResources(prev => prev.map(r => r.id === id ? { ...r, availableSpaces: parseInt(editValue) } : r));
+        setUpdatingId(null);
+      })
+      .catch(err => {
+        console.error("Update failed", err);
+        alert("Error updating spaces.");
+      });
+  };
+
+  const quickAdjust = (res, delta) => {
+    const newValue = Math.max(0, Math.min(res.capacity, res.availableSpaces + delta));
+    if (newValue === res.availableSpaces) return;
+
+    resourceService.updateAvailableSpaces(res.id, newValue)
+      .then(() => {
+        setResources(prev => prev.map(r => r.id === res.id ? { ...r, availableSpaces: newValue } : r));
+      })
+      .catch(err => console.error("Quick adjust failed", err));
+  };
+
+  return (
+    <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Space Management</h2>
+          <p className="text-sm text-slate-500">Manually control facility availability and seat counts</p>
+        </div>
+        <button 
+          onClick={fetchResources}
+          className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors shadow-sm"
+        >
+          <RefreshCw className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="p-20 text-center">
+            <RefreshCw className="h-8 w-8 text-blue-500 animate-spin mx-auto mb-4" />
+            <p className="text-slate-500 font-medium">Loading facilities...</p>
+          </div>
+        ) : (
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-400 font-extrabold">
+                <th className="px-8 py-5">Resource</th>
+                <th className="px-8 py-5">Category</th>
+                <th className="px-8 py-5">Total Capacity</th>
+                <th className="px-8 py-5">Available Seats</th>
+                <th className="px-8 py-5">Current Status</th>
+                <th className="px-8 py-5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {resources.map((res) => (
+                <tr key={res.id} className="hover:bg-slate-50/30 transition-colors group">
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-xl overflow-hidden shadow-sm">
+                        <img src={res.image} alt="" className="h-full w-full object-cover" />
+                      </div>
+                      <p className="font-bold text-slate-800 text-sm">{res.name}</p>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5">
+                    <span className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-wider border border-blue-100">
+                      {res.category}
+                    </span>
+                  </td>
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <Users className="h-3.5 w-3.5" />
+                      <span className="text-sm font-semibold">{res.capacity}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5">
+                    {updatingId === res.id ? (
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="number"
+                          value={editValue}
+                          onChange={(e) => setEditValue(e.target.value)}
+                          className="w-20 px-3 py-1.5 text-xs font-bold border-2 border-blue-500 rounded-lg outline-none"
+                        />
+                        <button 
+                          onClick={() => saveUpdate(res.id)}
+                          className="p-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        >
+                          <Save className="h-3.5 w-3.5" />
+                        </button>
+                        <button 
+                          onClick={() => setUpdatingId(null)}
+                          className="p-1.5 bg-slate-100 text-slate-400 rounded-lg hover:text-slate-600 transition"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <button 
+                          onClick={() => quickAdjust(res, -1)}
+                          disabled={res.availableSpaces === 0}
+                          className="p-1 px-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-red-50 hover:text-red-500 disabled:opacity-30 transition-colors"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        
+                        <div className="flex flex-col items-center">
+                          <span className={`text-sm font-black min-w-[2ch] text-center ${res.availableSpaces === 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                            {res.availableSpaces}
+                          </span>
+                        </div>
+
+                        <button 
+                          onClick={() => quickAdjust(res, 1)}
+                          disabled={res.availableSpaces >= res.capacity}
+                          className="p-1 px-1.5 bg-slate-100 text-slate-500 rounded-lg hover:bg-emerald-50 hover:text-emerald-500 disabled:opacity-30 transition-colors"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                        
+                        <div className="h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden hidden xl:block ml-2">
+                          <div 
+                            className={`h-full transition-all duration-500 ${res.availableSpaces === 0 ? 'bg-red-400' : 'bg-emerald-400'}`}
+                            style={{ width: `${(res.availableSpaces / res.capacity) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-8 py-5">
+                    <select 
+                      value={res.status} 
+                      onChange={(e) => handleStatusChange(res.id, e.target.value)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border outline-none cursor-pointer transition-all ${getStatusStyle(res.status)}`}
+                    >
+                      <option value="Available">Available</option>
+                      <option value="Maintenance">Maintenance</option>
+                      <option value="Booked">Booked</option>
+                    </select>
+                  </td>
+                  <td className="px-8 py-5 text-right">
+                    {updatingId !== res.id && (
+                      <button 
+                        onClick={() => handleUpdate(res.id, res.availableSpaces)}
+                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -857,6 +1143,7 @@ export default function AdminDashboardPage() {
         {/* Body — conditionally render panels */}
         {activeNav === "Settings" && <SettingsPanel displayName={displayName} />}
         {activeNav === "Bookings" && <BookingsPanel />}
+        {activeNav === "Space Management" && <SpaceManagementPanel />}
 
         {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports") && (
           <main className={`flex-1 overflow-y-auto px-8 py-7 bg-slate-50 ${(activeNav === "Overview" || activeNav === "Analytics" || activeNav === "Reports") ? "space-y-7" : ""} animate-in fade-in slide-in-from-bottom-2 duration-500`}>

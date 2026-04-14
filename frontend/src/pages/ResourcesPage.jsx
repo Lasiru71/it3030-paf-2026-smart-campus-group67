@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { 
   Search, 
@@ -11,70 +11,28 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/common/Button";
-
-const resources = [
-  {
-    id: 1,
-    name: "Grand Auditorium",
-    category: "L Halls",
-    capacity: 450,
-    location: "Block A, Level 2",
-    status: "Available",
-    image: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?auto=format&fit=crop&q=80&w=800"
-  },
-  {
-    id: 2,
-    name: "Advanced Robotics Lab",
-    category: "Labs",
-    capacity: 25,
-    location: "Engineering Wing",
-    status: "Booked",
-    image: "https://images.unsplash.com/photo-1581092334651-ddf26d9a1930?auto=format&fit=crop&q=80&w=800"
-  },
-  {
-    id: 3,
-    name: "Student Lounge B",
-    category: "Common",
-    capacity: 60,
-    location: "Student Hub",
-    status: "Available",
-    image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&q=80&w=800"
-  },
-  {
-    id: 4,
-    name: "Conference Room 104",
-    category: "Meeting",
-    capacity: 12,
-    location: "Commerce Building",
-    status: "Maintenance",
-    image: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?auto=format&fit=crop&q=80&w=800"
-  },
-  {
-    id: 5,
-    name: "Organic Chem Lab",
-    category: "Labs",
-    capacity: 30,
-    location: "Science Block S3",
-    status: "Available",
-    image: "https://images.unsplash.com/photo-1532187863486-abf9d39d998e?auto=format&fit=crop&q=80&w=800"
-  },
-  {
-    id: 6,
-    name: "Mini Theater 2",
-    category: "L Halls",
-    capacity: 120,
-    location: "Arts Pavilion",
-    status: "Available",
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=800"
-  }
-];
+import { resourceService } from "../services/resourceService";
 
 const categories = ["All", "L Halls", "Labs", "Meeting", "Common"];
 
 const ResourcesPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    resourceService.getAllResources()
+      .then(data => {
+        setResources(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
   const filteredResources = resources.filter(res => {
     const matchesCategory = activeCategory === "All" || res.category === activeCategory;
@@ -160,7 +118,7 @@ const ResourcesPage = () => {
                     <div className="absolute top-4 left-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm text-white ${
                         res.status === 'Available' ? 'bg-emerald-500' : 
-                        res.status === 'Booked' ? 'bg-amber-500' : 'bg-red-500'
+                        res.status === 'Maintenance' ? 'bg-amber-500' : 'bg-red-500'
                       }`}>
                         {res.status}
                       </span>
@@ -176,9 +134,9 @@ const ResourcesPage = () => {
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-3">
                       <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">{res.category}</span>
-                      <div className="flex items-center text-slate-500 text-xs font-medium">
-                        <Users className="h-3 w-3 mr-1" />
-                        Cap: {res.capacity}
+                      <div className="flex flex-col items-end text-slate-500 text-xs font-medium">
+                        <span className="text-emerald-600 font-bold mb-1">Avail: {res.availableSpaces} seats</span>
+                        <span className="flex items-center"><Users className="h-3 w-3 mr-1" /> Cap: {res.capacity}</span>
                       </div>
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2 truncate group-hover:text-blue-600 transition-colors">
@@ -189,18 +147,20 @@ const ResourcesPage = () => {
                       {res.location}
                     </div>
                     
-                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center text-xs text-slate-400">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Next: Tomorrow 09:00
-                      </div>
-                      <button 
-                        onClick={() => navigate(`/booking/${res.id}`, { state: { resource: res } })}
-                        className="text-blue-600 hover:text-blue-700 text-sm font-bold flex items-center gap-1"
-                      >
-                        Book Now
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
+                    <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
+                      {res.availableSpaces > 0 ? (
+                        <button 
+                          onClick={() => navigate(`/booking/${res.id}`, { state: { resource: res } })}
+                          className="text-blue-600 hover:text-blue-700 text-sm font-bold flex items-center gap-1 transition-all"
+                        >
+                          Book Now
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <div className="text-red-500 text-xs font-black uppercase tracking-wider bg-red-50 px-3 py-1.5 rounded-lg border border-red-100">
+                          Unavailable Seats for You!
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
