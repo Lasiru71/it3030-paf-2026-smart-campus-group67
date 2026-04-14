@@ -42,6 +42,14 @@ const BookingPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [liveTime, setLiveTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLiveTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -73,7 +81,10 @@ const BookingPage = () => {
 
     const today = new Date();
     const bookingDate = new Date(formData.bookingDate);
-    const todayStr = today.toISOString().split('T')[0];
+    // Use local date instead of UTC to avoid timezone mismatches
+    const todayStr = today.getFullYear() + '-' + 
+                    String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(today.getDate()).padStart(2, '0');
     
     if (formData.bookingDate < todayStr) {
       setError("invalid: booking date cannot be in the past");
@@ -82,12 +93,12 @@ const BookingPage = () => {
     }
 
     if (formData.bookingDate === todayStr) {
-      const currentTime = today.getHours() * 60 + today.getMinutes();
+      const currentTimeInMins = today.getHours() * 60 + today.getMinutes();
       const [bHours, bMins] = formData.bookingTime.split(':').map(Number);
-      const bookingTime = bHours * 60 + bMins;
+      const bookingTimeInMins = bHours * 60 + bMins;
       
-      if (bookingTime <= currentTime) {
-        setError("invalid time");
+      if (bookingTimeInMins < currentTimeInMins + 20) {
+        setError("invalid: booking time must be at least 20 minutes after from current time");
         setIsSubmitting(false);
         return;
       }
@@ -111,7 +122,8 @@ const BookingPage = () => {
       
     } catch (err) {
       const backendError = err.response?.data?.message || "Failed to create booking. Please try again.";
-      setError(backendError.includes("invalid") ? "invalid" : backendError);
+      // Show the actual error message from the backend instead of a generic label
+      setError(backendError);
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -169,6 +181,27 @@ const BookingPage = () => {
               <Clock className="w-5 h-5 mr-2 opacity-70" />
               Fill out the details to secure your reservation
             </p>
+          </div>
+
+          {/* Live Clock Badge */}
+          <div className="flex flex-col items-end mb-4">
+            <div className="bg-white/50 backdrop-blur-2xl border border-white/80 rounded-[2.5rem] px-8 py-6 shadow-2xl flex items-center gap-6 animate-in fade-in slide-in-from-right-4 duration-700">
+              <div className="h-16 w-16 bg-blue-600 rounded-[1.25rem] flex items-center justify-center shadow-2xl shadow-blue-500/40 transform hover:rotate-12 transition-transform">
+                <Clock className="h-8 w-8 text-white animate-pulse" />
+              </div>
+              <div className="text-right whitespace-nowrap">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-blue-900/70 mb-1.5">Current System Time</p>
+                <p className="text-4xl font-black text-slate-900 tracking-tighter leading-none mb-2">
+                  {liveTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+                </p>
+                <div className="flex items-center justify-end gap-2 px-3 py-1 bg-blue-100/50 rounded-full w-fit ml-auto">
+                  <Calendar className="h-4 w-4 text-blue-800" />
+                  <p className="text-xs font-black text-blue-900 uppercase tracking-widest">
+                    {liveTime.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -56,8 +56,8 @@ public class BookingService {
                 throw new IllegalArgumentException("invalid: booking date cannot be in the past");
             }
 
-            if (bDate.equals(today) && !bTime.isAfter(now)) {
-                throw new IllegalArgumentException("invalid time");
+            if (bDate.equals(today) && !bTime.isAfter(now.plusMinutes(20))) {
+                throw new IllegalArgumentException("invalid: booking time must be at least 20 minutes after from current time");
             }
         } catch (Exception e) {
             if (e instanceof IllegalArgumentException) throw e;

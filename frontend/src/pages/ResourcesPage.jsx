@@ -124,7 +124,7 @@ const ResourcesPage = () => {
                       </span>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                      <Button fullWidth size="sm" className="bg-white text-slate-900 hover:bg-slate-100">
+                      <Button fullWidth size="sm" className="bg-white !text-black font-bold hover:bg-slate-100 shadow-xl">
                         View Details
                       </Button>
                     </div>

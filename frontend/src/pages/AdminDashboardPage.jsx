@@ -428,7 +428,15 @@ function BookingsPanel({ onGenerateReport }) {
   useEffect(() => {
     bookingService.getAllBookings()
       .then(res => {
-        setBookings(res);
+        // Sort: newest submission first
+        const sorted = [...res].sort((a, b) => {
+          // Sort by creation time if available, otherwise by ID (likely alphabetical/incremental)
+          if (a.createdAt && b.createdAt) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          }
+          return b.id.localeCompare(a.id);
+        });
+        setBookings(sorted);
         setLoading(false);
       })
       .catch(err => {
@@ -443,6 +451,18 @@ function BookingsPanel({ onGenerateReport }) {
         setBookings(prev => prev.map(b => b.id === id ? { ...b, status: updatedBooking.status } : b));
       })
       .catch(err => console.error("Update failed", err));
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this booking? Reserved seats will be restored to the inventory.")) {
+      try {
+        await bookingService.deleteBooking(id);
+        setBookings(prev => prev.filter(b => b.id !== id));
+      } catch (err) {
+        console.error("Deletion failed", err);
+        alert("Failed to delete booking.");
+      }
+    }
   };
 
   const handleApproveClick = (bookingId) => {
@@ -514,23 +534,34 @@ function BookingsPanel({ onGenerateReport }) {
                     </span>
                   </td>
                   <td className="p-4 text-right">
-                    {(booking.status === "PENDING" || !booking.status) && (
-                        <div className="flex justify-end items-center gap-2">
-                          <button 
-                            onClick={() => handleStatusChange(booking.id, "APPROVED")} 
-                            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm transition-all shadow-emerald-200"
-                          >
-                            Approve
-                          </button>
-                          <button 
-                            onClick={() => handleStatusChange(booking.id, "REJECTED")} 
-                            className="px-4 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold rounded-xl transition-all"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                    )}
-                  </td>
+                      {(booking.status === "PENDING" || !booking.status) && (
+                          <div className="flex justify-end items-center gap-2">
+                            <button 
+                              onClick={() => handleStatusChange(booking.id, "APPROVED")} 
+                              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-xl shadow-sm transition-all shadow-emerald-200"
+                            >
+                              Approve
+                            </button>
+                            <button 
+                              onClick={() => handleStatusChange(booking.id, "REJECTED")} 
+                              className="px-4 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-xs font-bold rounded-xl transition-all"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                      )}
+                      
+                      {/* Global Delete Button */}
+                      <div className="flex justify-end mt-2">
+                        <button 
+                          onClick={() => handleDelete(booking.id)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all group"
+                          title="Delete Booking"
+                        >
+                          <Trash2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                        </button>
+                      </div>
+                    </td>
                 </tr>
               ))}
             </tbody>
@@ -638,7 +669,9 @@ function SpaceManagementPanel() {
     setLoading(true);
     resourceService.getAllResources()
       .then(data => {
-        setResources(data);
+        // Sort: newest first (assuming ID order or reversing)
+        const sorted = [...data].reverse();
+        setResources(sorted);
         setLoading(false);
       })
       .catch(err => {
@@ -1116,15 +1149,18 @@ export default function AdminDashboardPage() {
       >
         {/* Brand */}
         <div className="px-6 pt-7 pb-5 border-b border-white/[0.07]">
-          <div className="flex items-center gap-3">
+          <div 
+            onClick={() => navigate("/")}
+            className="flex items-center gap-3 cursor-pointer group transition-all"
+          >
             <div
-              className="h-10 w-10 rounded-2xl flex items-center justify-center shadow-xl"
+              className="h-10 w-10 rounded-2xl flex items-center justify-center shadow-xl group-hover:shadow-blue-500/20 transition-all border border-white/5"
               style={{ background: "linear-gradient(135deg,#38bdf8,#2563eb)" }}
             >
-              <Shield className="h-5 w-5 text-white" />
+              <Shield className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
             </div>
             <div>
-              <p className="text-white font-black text-sm tracking-tight leading-none">CampusReserve</p>
+              <p className="text-white font-black text-sm tracking-tight leading-none group-hover:text-sky-400 transition-colors">CampusReserve</p>
               <p className="text-slate-500 text-[9px] mt-1 font-bold uppercase tracking-[0.18em]">Admin Console</p>
             </div>
           </div>

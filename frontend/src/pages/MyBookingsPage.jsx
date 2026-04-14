@@ -93,7 +93,16 @@ const MyBookingsPage = () => {
         .then(data => {
           // Filter only the authenticated user's bookings
           const myBookings = data.filter(b => b.userEmail === auth.email);
-          setBookings(myBookings);
+          
+          // Sortings: newest first
+          const sortedBookings = myBookings.sort((a, b) => {
+            // Combine date and time for a robust comparison
+            const dateA = `${a.bookingDate}T${a.bookingTime}`;
+            const dateB = `${b.bookingDate}T${b.bookingTime}`;
+            return dateB.localeCompare(dateA);
+          });
+          
+          setBookings(sortedBookings);
           
           // Pre-fill message inputs
           const initialInputs = {};
