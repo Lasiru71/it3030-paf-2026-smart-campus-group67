@@ -21,28 +21,55 @@ public class ResourceController {
         return resourceRepository.findAll();
     }
 
+    @GetMapping("/{id}")
+    public Resource getResourceById(@PathVariable String id) {
+        return resourceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Resource not found"));
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public Resource createResource(@RequestBody Resource resource) {
+        // Enforce rule on creation too
+        if ("Maintenance".equals(resource.getStatus()) || "Booked".equals(resource.getStatus())) {
+            resource.setAvailableSpaces(0);
+        }
+        return resourceRepository.save(resource);
+    }
+
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public Resource updateResource(@PathVariable String id, @RequestBody Map<String, Object> updates) {
         return resourceRepository.findById(id).map(res -> {
+            // Apply updates from the map
+            if (updates.containsKey("name")) res.setName((String) updates.get("name"));
+            if (updates.containsKey("category")) res.setCategory((String) updates.get("category"));
+            if (updates.containsKey("location")) res.setLocation((String) updates.get("location"));
+            if (updates.containsKey("status")) res.setStatus((String) updates.get("status"));
+            if (updates.containsKey("image")) res.setImage((String) updates.get("image"));
+            
+            if (updates.containsKey("capacity")) {
+                Object cap = updates.get("capacity");
+                if (cap instanceof Number) res.setCapacity(((Number) cap).intValue());
+            }
+            
             if (updates.containsKey("availableSpaces")) {
-                res.setAvailableSpaces((Integer) updates.get("availableSpaces"));
+                Object spaces = updates.get("availableSpaces");
+                if (spaces instanceof Number) res.setAvailableSpaces(((Number) spaces).intValue());
             }
-            if (updates.containsKey("status")) {
-                String newStatus = (String) updates.get("status");
-                res.setStatus(newStatus);
-                // Rule: If set to Maintenance or Booked, available spaces must be 0
-                if ("Maintenance".equals(newStatus) || "Booked".equals(newStatus)) {
-                    res.setAvailableSpaces(0);
-                }
-            }
-            if (updates.containsKey("availableSpaces") && !"Maintenance".equals(res.getStatus()) && !"Booked".equals(res.getStatus())) {
-                res.setAvailableSpaces((Integer) updates.get("availableSpaces"));
-            } else if (updates.containsKey("availableSpaces") && ("Maintenance".equals(res.getStatus()) || "Booked".equals(res.getStatus()))) {
-                // If status is restricted, enforce 0 spaces regardless of request
+
+            // Rule Enforcement: If status is Maintenance or Booked, available spaces must be 0
+            if ("Maintenance".equals(res.getStatus()) || "Booked".equals(res.getStatus())) {
                 res.setAvailableSpaces(0);
             }
+            
             return resourceRepository.save(res);
         }).orElseThrow(() -> new RuntimeException("Resource not found"));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteResource(@PathVariable String id) {
+        resourceRepository.deleteById(id);
     }
 }

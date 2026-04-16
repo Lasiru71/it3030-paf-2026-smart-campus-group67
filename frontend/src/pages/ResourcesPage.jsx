@@ -21,15 +21,31 @@ const ResourcesPage = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    setResources(facilityService.getAll());
+    const fetchResources = async () => {
+      try {
+        setLoading(true);
+        const data = await facilityService.getAll();
+        setResources(data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch resources:", err);
+        setError("Could not load resources. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchResources();
   }, []);
 
   const filteredResources = resources.filter(res => {
     const matchesCategory = activeCategory === "All" || res.category === activeCategory;
-    const matchesSearch = res.name.toLowerCase().includes(search.toLowerCase()) || 
-                          res.location.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = (res.name?.toLowerCase() || "").includes(search.toLowerCase()) || 
+                          (res.location?.toLowerCase() || "").includes(search.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -96,7 +112,26 @@ const ResourcesPage = () => {
       <section className="py-16 bg-slate-50 min-h-screen">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          {filteredResources.length > 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-slate-500 font-medium">Syncing with campus database...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20 bg-red-50 rounded-3xl border border-dashed border-red-200">
+              <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Info className="h-8 w-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-red-800 mb-2">Connection Issue</h3>
+              <p className="text-slate-600 max-w-xs mx-auto">{error}</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="mt-6 px-6 py-2 bg-white border border-red-200 text-red-600 rounded-xl font-bold hover:bg-red-50 transition-colors shadow-sm"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : filteredResources.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredResources.map((res) => (
                 <div key={res.id} className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
