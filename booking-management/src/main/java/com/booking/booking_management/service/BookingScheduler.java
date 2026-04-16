@@ -1,7 +1,6 @@
 package com.booking.booking_management.service;
 
 import com.booking.booking_management.model.Booking;
-import com.booking.booking_management.model.Resource;
 import com.booking.booking_management.repository.BookingRepository;
 import com.booking.booking_management.repository.ResourceRepository;
 import org.slf4j.Logger;
