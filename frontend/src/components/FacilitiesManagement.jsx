@@ -57,7 +57,10 @@ const statusThemes = {
 export default function FacilitiesManagement() {
   // Views: "dashboard" | "manage"
   const [view, setView] = useState("dashboard");
-  const [activeTab, setActiveTab] = useState("Facilities");
+  const [activeTab, setActiveTab] = useState("Facilities"); // "Facilities" | "Resources"
+  const facilitiesCategories = ["L Halls", "Labs", "Meeting", "Common"];
+  const resourcesCategories = ["Equipment", "Electronics", "Audio/Visual", "Furniture"];
+
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [facilities, setFacilities] = useState([]);
@@ -83,11 +86,17 @@ export default function FacilitiesManagement() {
     endTime: "06:00 PM"
   });
 
+  const currentItems = facilities.filter(f => {
+    const isResourceCategory = resourcesCategories.includes(f.category);
+    if (activeTab === "Facilities") return !isResourceCategory;
+    return isResourceCategory;
+  });
+
   const stats = [
-    { label: "Total Facilities", value: facilities.length.toString(), icon: Building2, color: "bg-blue-600" },
-    { label: "Available", value: facilities.filter(f => f.status === "Available").length.toString(), icon: CheckCircle2, color: "bg-emerald-600" },
-    { label: "Occupied", value: facilities.filter(f => f.status === "Booked").length.toString(), icon: AlertCircle, color: "bg-orange-500" },
-    { label: "Under Maintenance", value: facilities.filter(f => f.status === "Maintenance").length.toString(), icon: Hammer, color: "bg-red-500" },
+    { label: `Total ${activeTab}`, value: currentItems.length.toString(), icon: Building2, color: "bg-blue-600" },
+    { label: "Available", value: currentItems.filter(f => f.status === "Available").length.toString(), icon: CheckCircle2, color: "bg-emerald-600" },
+    { label: "Occupied", value: currentItems.filter(f => f.status === "Booked").length.toString(), icon: AlertCircle, color: "bg-orange-500" },
+    { label: "Under Maintenance", value: currentItems.filter(f => f.status === "Maintenance").length.toString(), icon: Hammer, color: "bg-red-500" },
   ];
 
   const handleEdit = (facility) => {
@@ -104,7 +113,17 @@ export default function FacilitiesManagement() {
   };
 
   const handleAddNew = () => {
-    setFormData({ id: null, name: "", category: "L Halls", block: "Main Building", level: "Level 1", capacity: "", status: "Active", startTime: "08:00 AM", endTime: "06:00 PM" });
+    setFormData({ 
+      id: null, 
+      name: "", 
+      category: activeTab === "Facilities" ? "L Halls" : "Equipment", 
+      block: "Main Building", 
+      level: "Level 1", 
+      capacity: "", 
+      status: "Active", 
+      startTime: "08:00 AM", 
+      endTime: "06:00 PM" 
+    });
     setView("manage");
   };
 
@@ -114,7 +133,7 @@ export default function FacilitiesManagement() {
       alert("Please enter a facility name.");
       return;
     }
-    if (!formData.capacity || formData.capacity <= 0) {
+    if (activeTab === "Facilities" && (!formData.capacity || formData.capacity <= 0)) {
       alert("Please enter a valid capacity.");
       return;
     }
@@ -132,7 +151,8 @@ export default function FacilitiesManagement() {
     const updatedFacility = {
       ...formData,
       location: `${formData.block}, ${formData.level}`,
-      capacity: parseInt(formData.capacity) || 0,
+      capacity: activeTab === "Facilities" ? (parseInt(formData.capacity) || 0) : 1,
+      availableSpaces: activeTab === "Facilities" ? (parseInt(formData.capacity) || 0) : 1,
       status: formData.status === "Active" ? "Available" : (formData.status === "Maintenance" ? "Maintenance" : "Booked")
     };
 
@@ -174,7 +194,7 @@ export default function FacilitiesManagement() {
              >
                <ChevronLeft className="h-5 w-5" />
              </button>
-             <h1 className="text-white text-xl font-bold tracking-tight">Add / Edit Facility</h1>
+             <h1 className="text-white text-xl font-bold tracking-tight">Add / Edit {activeTab.slice(0, -1)}</h1>
           </div>
           <div className="flex items-center gap-6">
             <button className="relative text-white/80 hover:text-white transition-colors">
@@ -192,7 +212,7 @@ export default function FacilitiesManagement() {
            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden self-start">
               {/* Card Header */}
               <div className="px-10 py-6 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Add Facility</h3>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tight">Add {activeTab.slice(0, -1)}</h3>
                 <button onClick={() => setView("dashboard")} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                   <X className="h-6 w-6 text-slate-400" />
                 </button>
@@ -201,7 +221,7 @@ export default function FacilitiesManagement() {
               <div className="p-10 space-y-8">
                 {/* Facility Name (Full Width) */}
                 <div className="space-y-2">
-                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Facility Name <span className="text-red-500">*</span></label>
+                  <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">{activeTab.slice(0, -1)} Name <span className="text-red-500">*</span></label>
                   <input 
                     type="text" 
                     value={formData.name}
@@ -214,7 +234,7 @@ export default function FacilitiesManagement() {
                 {/* Grid row 1: Type and Location Block */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                    <div className="space-y-2">
-                      <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Facility Category <span className="text-red-500">*</span></label>
+                      <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Category <span className="text-red-500">*</span></label>
                       <div className="relative">
                         <select 
                           value={formData.category}
@@ -222,10 +242,21 @@ export default function FacilitiesManagement() {
                           className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold text-slate-700 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20 shadow-inner"
                         >
                           <option value="">Select category</option>
-                          <option value="L Halls">Lecture Hall</option>
-                          <option value="Labs">Laboratory</option>
-                          <option value="Meeting">Meeting Room</option>
-                          <option value="Common">Common Space</option>
+                          {activeTab === "Facilities" ? (
+                            <>
+                              <option value="L Halls">Lecture Hall</option>
+                              <option value="Labs">Laboratory</option>
+                              <option value="Meeting">Meeting Room</option>
+                              <option value="Common">Common Space</option>
+                            </>
+                          ) : (
+                            <>
+                              <option value="Equipment">Equipment</option>
+                              <option value="Electronics">Electronics</option>
+                              <option value="Audio/Visual">Audio/Visual</option>
+                              <option value="Furniture">Furniture</option>
+                            </>
+                          )}
                         </select>
                         <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                       </div>
@@ -252,16 +283,18 @@ export default function FacilitiesManagement() {
 
                 {/* Grid row 2: Capacity and Availability From */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                   <div className="space-y-2">
-                      <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Facility Capacity <span className="text-red-500">*</span></label>
-                      <input 
-                        type="number" 
-                        value={formData.capacity}
-                        onChange={(e) => setFormData({...formData, capacity: e.target.value})}
-                        className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500/20 shadow-inner"
-                        placeholder="Enter capacity" 
-                      />
-                   </div>
+                   {activeTab === "Facilities" && (
+                     <div className="space-y-2">
+                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Capacity / Seats <span className="text-red-500">*</span></label>
+                        <input 
+                          type="number" 
+                          value={formData.capacity}
+                          onChange={(e) => setFormData({...formData, capacity: e.target.value})}
+                          className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500/20 shadow-inner"
+                          placeholder="Enter capacity" 
+                        />
+                     </div>
+                   )}
                    <div className="space-y-2">
                       <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Availability Time <span className="text-red-500">*</span></label>
                       <div className="flex items-center gap-2 bg-slate-50 rounded-2xl p-1 border border-transparent focus-within:border-blue-200 focus-within:bg-white transition-all shadow-inner">
@@ -382,8 +415,18 @@ export default function FacilitiesManagement() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-            <button className={`px-6 py-2 rounded-lg text-sm font-bold shadow-lg bg-slate-900 text-white`}>Facilities</button>
-            <button className={`px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-800 transition-all`}>Resources</button>
+            <button 
+              onClick={() => setActiveTab("Facilities")}
+              className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === "Facilities" ? "shadow-lg bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
+            >
+              Facilities
+            </button>
+            <button 
+              onClick={() => setActiveTab("Resources")}
+              className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === "Resources" ? "shadow-lg bg-slate-900 text-white" : "text-slate-500 hover:text-slate-800"}`}
+            >
+              Resources
+            </button>
           </div>
           <button 
             onClick={handleAddNew}
@@ -435,7 +478,7 @@ export default function FacilitiesManagement() {
         <div className="flex-1 p-8">
           {viewMode === "grid" ? (
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-               {facilities.filter(f => f.name.toLowerCase().includes(search.toLowerCase())).map(f => (
+               {currentItems.filter(f => f.name.toLowerCase().includes(search.toLowerCase())).map(f => (
                  <div key={f.id} className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden hover:-translate-y-1">
                    <div className="h-2 w-full bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                    <div className="p-8">
@@ -454,13 +497,15 @@ export default function FacilitiesManagement() {
                         <div className="flex items-center gap-3 text-slate-600">
                           <MapPin className="h-4 w-4 opacity-40" /> <span className="text-sm font-semibold">{f.location}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-slate-600">
-                          <Users className="h-4 w-4 opacity-40" /> <span className="text-sm font-semibold">Capacity: {f.capacity}</span>
-                        </div>
+                        {activeTab === "Facilities" && (
+                          <div className="flex items-center gap-3 text-slate-600">
+                            <Users className="h-4 w-4 opacity-40" /> <span className="text-sm font-semibold">Capacity: {f.capacity}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
-                         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">UID: FAC-0{f.id}</span>
+                         <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">UID: {activeTab === "Facilities" ? "FAC" : "RES"}-0{f.id}</span>
                          <div className="flex gap-2">
                             <button onClick={() => handleEdit(f)} className="p-2.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"><Edit className="h-5 w-5"/></button>
                             <button onClick={() => handleDelete(f.id)} className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 className="h-5 w-5"/></button>
@@ -483,7 +528,7 @@ export default function FacilitiesManagement() {
                     </tr>
                   </thead>
                   <tbody>
-                    {facilities.map(f => (
+                    {currentItems.map(f => (
                       <tr key={f.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
                         <td className="px-8 py-5"><span className="text-sm font-black text-slate-800">{f.name}</span></td>
                         <td className="px-8 py-5 text-xs font-bold text-slate-500">{f.category}</td>
