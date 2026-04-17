@@ -29,6 +29,9 @@ public class IncidentTicket {
     private List<String> imageUrls = new ArrayList<>();
 
     private String studentId;
+    private String technicianId;
+    private String technicianName;
+    private String rejectionReason;
 
     private IncidentStatus status;
 
@@ -38,7 +41,7 @@ public class IncidentTicket {
     public IncidentTicket() {
     }
 
-    public IncidentTicket(String id, String resource, String category, String description, IncidentPriority priority, String contactInfo, List<String> imageUrls, String studentId, IncidentStatus status, LocalDateTime createdAt) {
+    public IncidentTicket(String id, String resource, String category, String description, IncidentPriority priority, String contactInfo, List<String> imageUrls, String studentId, String technicianId, String technicianName, String rejectionReason, IncidentStatus status, LocalDateTime createdAt) {
         this.id = id;
         this.resource = resource;
         this.category = category;
@@ -47,6 +50,9 @@ public class IncidentTicket {
         this.contactInfo = contactInfo;
         this.imageUrls = imageUrls;
         this.studentId = studentId;
+        this.technicianId = technicianId;
+        this.technicianName = technicianName;
+        this.rejectionReason = rejectionReason;
         this.status = status;
         this.createdAt = createdAt;
     }
@@ -129,5 +135,29 @@ public class IncidentTicket {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getTechnicianId() {
+        return technicianId;
+    }
+
+    public void setTechnicianId(String technicianId) {
+        this.technicianId = technicianId;
+    }
+
+    public String getTechnicianName() {
+        return technicianName;
+    }
+
+    public void setTechnicianName(String technicianName) {
+        this.technicianName = technicianName;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 }

@@ -1,7 +1,7 @@
 // Responsive Navbar — shows different content based on auth state and user role
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, Menu, X, ChevronDown, LogOut, User, Shield, Wrench, AlertCircle } from "lucide-react";
+import { Bell, Menu, X, ChevronDown, LogOut, User, Shield, Wrench, AlertCircle, Search } from "lucide-react";
 import Logo from "../common/Logo";
 import Button from "../common/Button";
 import { useAuth } from "../../context/AuthContext";
@@ -56,7 +56,10 @@ const Navbar = () => {
     ...(isTechnician ? [{ label: "Technician Portal", to: ROUTES.TECHNICIAN_DASHBOARD }] : []),
     
     // Add "Make a Ticket" for students
-    ...(!isAdmin && !isTechnician ? [{ label: "Make a Ticket", to: ROUTES.MAKE_TICKET, icon: <AlertCircle className="h-4 w-4" /> }] : []),
+    ...(!isAdmin && !isTechnician ? [
+      { label: "Make a Ticket", to: ROUTES.MAKE_TICKET, icon: <AlertCircle className="h-4 w-4" /> },
+      { label: "Track Ticket", to: ROUTES.TRACK_TICKET, icon: <Search className="h-4 w-4" /> }
+    ] : []),
 
     { label: "About", to: ROUTES.ABOUT },
     { label: "Contact", to: ROUTES.CONTACT },

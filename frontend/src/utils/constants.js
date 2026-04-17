@@ -24,5 +24,6 @@ export const ROUTES = {
   ADMIN_DASHBOARD: "/admin",
   ADMIN_PROFILE: "/admin/profile",
   TECHNICIAN_DASHBOARD: "/technician",
+  TRACK_TICKET: "/track-ticket",
   UNAUTHORIZED: "/unauthorized",
 };

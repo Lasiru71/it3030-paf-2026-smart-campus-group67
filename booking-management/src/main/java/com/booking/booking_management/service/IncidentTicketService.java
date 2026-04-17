@@ -2,8 +2,11 @@ package com.booking.booking_management.service;
 
 import com.booking.booking_management.dto.request.IncidentTicketRequest;
 import com.booking.booking_management.enums.IncidentStatus;
+import com.booking.booking_management.enums.Role;
 import com.booking.booking_management.model.IncidentTicket;
+import com.booking.booking_management.model.User;
 import com.booking.booking_management.repository.IncidentTicketRepository;
+import com.booking.booking_management.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,11 +24,13 @@ import java.util.UUID;
 public class IncidentTicketService {
 
     private final IncidentTicketRepository repository;
+    private final UserRepository userRepository;
     private final String uploadDir = "uploads/incidents";
 
     @Autowired
-    public IncidentTicketService(IncidentTicketRepository repository) {
+    public IncidentTicketService(IncidentTicketRepository repository, UserRepository userRepository) {
         this.repository = repository;
+        this.userRepository = userRepository;
         try {
             Files.createDirectories(Paths.get(uploadDir));
         } catch (IOException e) {
@@ -66,5 +71,37 @@ public class IncidentTicketService {
 
     public List<IncidentTicket> getStudentTickets(String studentId) {
         return repository.findByStudentId(studentId);
+    }
+
+    public List<IncidentTicket> getAllTickets() {
+        return repository.findAll();
+    }
+
+    public IncidentTicket getTicketById(String id) {
+        return repository.findById(id).orElse(null);
+    }
+
+    /**
+     * Updated: Technicians are considered STAFF members in this system.
+     */
+    public List<User> getAllTechnicians() {
+        return userRepository.findByRole(Role.STAFF);
+    }
+
+    public IncidentTicket assignTechnician(String ticketId, String technicianId, String technicianName) {
+        IncidentTicket ticket = repository.findById(ticketId).orElseThrow(() -> new RuntimeException("Ticket not found"));
+        ticket.setTechnicianId(technicianId);
+        ticket.setTechnicianName(technicianName);
+        ticket.setStatus(IncidentStatus.IN_PROGRESS);
+        return repository.save(ticket);
+    }
+
+    public IncidentTicket updateStatus(String ticketId, IncidentStatus status, String rejectionReason) {
+        IncidentTicket ticket = repository.findById(ticketId).orElseThrow(() -> new RuntimeException("Ticket not found"));
+        ticket.setStatus(status);
+        if (status == IncidentStatus.REJECTED && rejectionReason != null) {
+            ticket.setRejectionReason(rejectionReason);
+        }
+        return repository.save(ticket);
     }
 }

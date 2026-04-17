@@ -8,7 +8,7 @@ import {
   Trash2, Edit, LogOut, Bell, Search, TrendingUp, Filter,
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
   Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
-  FileText, LayoutGrid, Plus, Minus, MessageSquare, CalendarDays
+  FileText, LayoutGrid, Plus, Minus, MessageSquare, CalendarDays, AlertCircle, Wrench
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
 import { bookingService } from "../services/bookingService";
@@ -70,6 +70,11 @@ const navSections = [
     ]
   },
   { header: "BUSINESS", items: [{ icon: FileText, label: "Reports" }] },
+  {
+    header: "MAINTENANCE", items: [
+      { icon: AlertCircle, label: "Incident Tickets" },
+    ]
+  },
   {
     header: "ADMIN", items: [
       { icon: BarChart3, label: "Analytics" },
@@ -1305,6 +1310,300 @@ function IndividualBookingsPanel() {
 }
 
 
+// ─── Tickets Panel ──────────────────────────────────────────
+function TicketsPanel() {
+  const [tickets, setTickets] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [assigning, setAssigning] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [selectedTech, setSelectedTech] = useState("");
+
+  useEffect(() => {
+    fetchTickets();
+    fetchTechnicians();
+  }, []);
+
+  const fetchTickets = async () => {
+    try {
+      const res = await axiosInstance.get("/api/incidents");
+      setTickets(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch tickets", err);
+      setLoading(false);
+    }
+  };
+
+  const fetchTechnicians = async () => {
+    try {
+      const res = await axiosInstance.get("/api/incidents/technicians");
+      setTechnicians(res.data);
+    } catch (err) {
+      console.error("Failed to fetch technicians", err);
+    }
+  };
+
+  const handleAssign = async () => {
+    if (!selectedTech) return;
+    const tech = technicians.find(t => t.id === selectedTech);
+    try {
+      setAssigning(true);
+      await axiosInstance.patch(`/api/incidents/${selectedTicket.id}/assign`, null, {
+        params: {
+          technicianId: tech.id,
+          technicianName: tech.fullName || tech.email
+        }
+      });
+      setSelectedTicket(null);
+      setAssigning(false);
+      fetchTickets();
+    } catch (err) {
+      console.error("Assignment failed", err);
+      setAssigning(false);
+    }
+  };
+
+  const handleStatusUpdate = async (status, reason = null) => {
+    try {
+      await axiosInstance.patch(`/api/incidents/${selectedTicket.id}/status`, null, {
+        params: { status, rejectionReason: reason }
+      });
+      setSelectedTicket(null);
+      setRejecting(false);
+      setRejectionReason("");
+      fetchTickets();
+    } catch (err) {
+      console.error("Status update failed", err);
+    }
+  };
+
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "OPEN": return "bg-blue-100 text-blue-700 border-blue-200";
+      case "IN_PROGRESS": return "bg-amber-100 text-amber-700 border-amber-200";
+      case "RESOLVED": return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "CLOSED": return "bg-slate-100 text-slate-700 border-slate-200";
+      case "REJECTED": return "bg-red-100 text-red-700 border-red-200";
+      default: return "bg-slate-100 text-slate-700 border-slate-200";
+    }
+  };
+
+  return (
+    <main className="flex-1 overflow-y-auto bg-slate-50 p-8 animate-in fade-in duration-500">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Maintenance Tickets</h2>
+          <p className="text-sm text-slate-500">Monitor and assign technicians to campus issues</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="bg-white rounded-3xl border border-slate-200 p-20 text-center text-slate-500 font-medium font-black uppercase text-xs tracking-widest">
+          Loading tickets...
+        </div>
+      ) : tickets.length === 0 ? (
+        <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-20 text-center shadow-sm">
+          <AlertCircle className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+          <p className="text-lg font-bold text-slate-500">All Clear!</p>
+          <p className="text-sm text-slate-400 mt-1">There are no maintenance tickets to display.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                <th className="px-6 py-4">Ticket ID</th>
+                <th className="px-6 py-4">Resource</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4">Priority</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {tickets.map(ticket => (
+                <tr key={ticket.id} className="hover:bg-slate-50/50 transition-colors group">
+                  <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">{ticket.id}</td>
+                  <td className="px-6 py-4 font-bold text-sm text-slate-800">{ticket.resource}</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-slate-600">{ticket.category}</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
+                      ticket.priority === "URGENT" ? "bg-red-50 text-red-600 border border-red-100 shadow-sm shadow-red-100" :
+                      ticket.priority === "HIGH" ? "bg-orange-50 text-orange-600 border border-orange-100" :
+                      "bg-blue-50 text-blue-600 border border-blue-100"
+                    }`}>
+                      {ticket.priority}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm ${getStatusStyle(ticket.status)}`}>
+                      {ticket.status.replace("_", " ")}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button
+                      onClick={() => setSelectedTicket(ticket)}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 hover:shadow-slate-200"
+                    >
+                      View Details
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Detail Modal */}
+      {selectedTicket && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-100 overflow-hidden transform scale-100 animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">Incident Details</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Ticket ID: {selectedTicket.id}</p>
+              </div>
+              <button onClick={() => { setSelectedTicket(null); setRejecting(false); }} className="p-2 rounded-xl hover:bg-slate-200 text-slate-400 transition-colors">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[70vh] space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Resource</label>
+                  <p className="font-bold text-slate-800">{selectedTicket.resource}</p>
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Status</label>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border shadow-sm ${getStatusStyle(selectedTicket.status)}`}>
+                    {selectedTicket.status.replace("_", " ")}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Issue Overview</label>
+                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 font-black italic">{selectedTicket.category}</p>
+                  <p className="text-sm text-slate-700 leading-relaxed font-medium">
+                    "{selectedTicket.description}"
+                  </p>
+                </div>
+              </div>
+
+              {selectedTicket.imageUrls?.length > 0 && (
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Attached Evidence</label>
+                  <div className="flex gap-4 mt-2">
+                    {selectedTicket.imageUrls.map((url, i) => (
+                      <div key={i} className="group relative">
+                        <img 
+                          src={`http://localhost:8080${url}`} 
+                          alt="Evidence" 
+                          className="h-28 w-28 object-cover rounded-2xl border border-slate-200 shadow-md transition-transform group-hover:scale-105" 
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-6 border-t border-slate-100">
+                {selectedTicket.status === "OPEN" ? (
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-black text-slate-900">Task Allocation</h4>
+                    <div className="flex gap-3">
+                      <div className="relative flex-1">
+                        <select 
+                          value={selectedTech}
+                          onChange={(e) => setSelectedTech(e.target.value)}
+                          className="w-full h-11 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                        >
+                          <option value="">Choose a Technician...</option>
+                          {technicians.map(tech => (
+                            <option key={tech.id} value={tech.id}>{tech.fullName || tech.email} ({tech.email})</option>
+                          ))}
+                        </select>
+                        <Wrench className="pointer-events-none absolute right-4 top-3.5 h-4 w-4 text-slate-400" />
+                      </div>
+                      <button 
+                        onClick={handleAssign}
+                        disabled={!selectedTech || assigning}
+                        className="px-6 py-2.5 bg-blue-600 text-white text-[10px] font-black uppercase rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 disabled:opacity-50 transition-all tracking-wider"
+                      >
+                        {assigning ? "Assigning..." : "Assign Task"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1">Assigned Support</label>
+                    <div className="flex items-center gap-2.5 bg-slate-50 p-3 rounded-xl border border-slate-100 inline-flex">
+                      <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <Wrench className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-800">{selectedTicket.technicianName || "Unknown Technician"}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {rejecting && (
+                <div className="pt-6 border-t border-slate-100 animate-in slide-in-from-top-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2 text-red-600">Rejection Protocol</label>
+                  <textarea 
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm font-medium text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-red-500 min-h-[100px] shadow-inner"
+                    placeholder="Enter the investigation results or reason for cancellation..."
+                  />
+                  <div className="flex justify-end gap-3 mt-4">
+                    <button onClick={() => setRejecting(false)} className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:bg-slate-50 rounded-xl transition-colors">Cancel</button>
+                    <button 
+                      onClick={() => handleStatusUpdate("REJECTED", rejectionReason)}
+                      className="px-6 py-2 bg-red-600 text-white text-[10px] font-black uppercase rounded-xl shadow-lg shadow-red-100 hover:bg-red-700 active:scale-95 transition-all tracking-wider"
+                    >
+                      Confirm Rejection
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-5 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+              <div className="flex gap-3">
+                {selectedTicket.status !== "REJECTED" && selectedTicket.status !== "CLOSED" && (
+                  <button 
+                    onClick={() => setRejecting(true)}
+                    className="px-4 py-2 text-red-600 text-[10px] font-black uppercase hover:bg-red-50 rounded-xl transition-colors tracking-tight"
+                  >
+                    Reject Issue
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-3">
+                {selectedTicket.status === "RESOLVED" && (
+                  <button 
+                    onClick={() => handleStatusUpdate("CLOSED")}
+                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase rounded-xl hover:bg-black active:scale-95 transition-all shadow-xl tracking-wider"
+                  >
+                    Archive & Close
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  );
+}
+
 export default function AdminDashboardPage() {
   const { auth, logoutUser } = useAuth();
   const navigate = useNavigate();
@@ -1674,6 +1973,7 @@ export default function AdminDashboardPage() {
         {activeNav === "Message Box" && <MessageBoxPanel />}
         {activeNav === "Space Management" && <SpaceManagementPanel />}
         {activeNav === "Individual Bookings" && <IndividualBookingsPanel />}
+        {activeNav === "Incident Tickets" && <TicketsPanel />}
 
         {activeNav === "Facilities & Resources" && <FacilitiesManagement />}
 
