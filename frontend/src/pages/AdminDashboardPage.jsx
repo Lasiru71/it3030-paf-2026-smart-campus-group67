@@ -62,7 +62,7 @@ const navSections = [
   { header: "DIRECTORY", items: [{ icon: Users, label: "Users" }] },
   {
     header: "ACADEMIC", items: [
-      { icon: LayoutGrid, label: "Facilities" },
+      { icon: LayoutGrid, label: "Facilities & Resources" },
       { icon: BookOpen, label: "Bookings" },
       { icon: MessageSquare, label: "Message Box" },
       { icon: Database, label: "Space Management" },
@@ -1675,7 +1675,7 @@ export default function AdminDashboardPage() {
         {activeNav === "Space Management" && <SpaceManagementPanel />}
         {activeNav === "Individual Bookings" && <IndividualBookingsPanel />}
 
-        {activeNav === "Facilities" && <FacilitiesManagement />}
+        {activeNav === "Facilities & Resources" && <FacilitiesManagement />}
 
         {activeNav === "Bookings" && (
           <main className="flex-1 overflow-y-auto bg-slate-50 p-8 space-y-6">
