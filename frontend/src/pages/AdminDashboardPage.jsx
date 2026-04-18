@@ -998,15 +998,20 @@ function IndividualBookingsPanel() {
     return resourceName.replace("Individual Session - ", "").split(", ");
   };
 
-  const handleToggle = (bookingId, building, type, value) => {
+  const handleToggle = (bookingId, building, type, value, isSingle = false) => {
     setSelectedMapping(prev => {
       const bookingData = prev[bookingId] || {};
       const buildingData = bookingData[building] || { floors: [], facilities: [] };
       const currentList = buildingData[type] || [];
       
-      const updatedList = currentList.includes(value)
-        ? currentList.filter(v => v !== value)
-        : [...currentList, value];
+      let updatedList;
+      if (isSingle) {
+        updatedList = value ? [value] : [];
+      } else {
+        updatedList = currentList.includes(value)
+          ? currentList.filter(v => v !== value)
+          : [...currentList, value];
+      }
       
       return {
         ...prev,
@@ -1221,23 +1226,22 @@ function IndividualBookingsPanel() {
                               
                               <div className="space-y-2">
                                 <div>
-                                  <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Floors</p>
-                                  <div className="flex flex-wrap gap-1">
-                                    {floors.map(floor => {
-                                      const isSelected = (bookingMapping[building]?.floors || []).includes(floor);
-                                      return (
-                                        <button
-                                          key={floor}
-                                          onClick={() => handleToggle(booking.id, building, "floors", floor)}
-                                          className={`px-2 py-0.5 text-[8px] font-bold rounded border transition-all ${
-                                            isSelected ? "bg-blue-600 border-blue-600 text-white shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:text-blue-600"
-                                          }`}
-                                        >
-                                          {floor}
-                                        </button>
-                                      );
-                                    })}
+                                <div>
+                                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">Level / Floor <span className="text-red-500">*</span></p>
+                                  <div className="relative">
+                                    <select 
+                                      value={bookingMapping[building]?.floors?.[0] || ""}
+                                      onChange={(e) => handleToggle(booking.id, building, "floors", e.target.value, true)}
+                                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-700 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/10"
+                                    >
+                                      <option value="">Select Level</option>
+                                      {floors.map(f => (
+                                        <option key={f} value={f}>{f}</option>
+                                      ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 bottom-3 h-3 w-3 text-slate-400 pointer-events-none" />
                                   </div>
+                                </div>
                                 </div>
                                 
                                 <div>
