@@ -29,7 +29,11 @@ import {
   ChevronLeft,
   Image as ImageIcon,
   UploadCloud,
-  Copy
+  Copy,
+  Info,
+  Sparkles,
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 import { renderLocation } from "../utils/formatters";
 import { facilityService } from "../services/facilityService";
@@ -82,7 +86,10 @@ export default function FacilitiesManagement() {
     endTime: "06:00 PM",
     image: "",
     isDistributed: false,
-    locationBatches: [{ block: "Main Building", level: "Level 1", quantity: "" }]
+    locationBatches: [{ block: "Main Building", level: "Level 1", quantity: "" }],
+    description: "",
+    amenities: [],
+    rules: []
   });
 
   const currentItems = facilities.filter(f => {
@@ -125,7 +132,10 @@ export default function FacilitiesManagement() {
       status: facility.status === "Available" ? "Active" : (facility.status === "Maintenance" ? "Maintenance" : "Out of Service"),
       startTime: facility.startTime || "08:00 AM",
       endTime: facility.endTime || "06:00 PM",
-      image: facility.image || ""
+      image: facility.image || "",
+      description: facility.description || "",
+      amenities: facility.amenities || [],
+      rules: facility.rules || []
     });
     setView("manage");
   };
@@ -158,7 +168,10 @@ export default function FacilitiesManagement() {
       status: "Active", // Reset status to active for the new copy
       startTime: facility.startTime || "08:00 AM",
       endTime: facility.endTime || "06:00 PM",
-      image: facility.image || ""
+      image: facility.image || "",
+      description: facility.description || "",
+      amenities: facility.amenities || [],
+      rules: facility.rules || []
     });
     setView("manage");
   };
@@ -176,7 +189,10 @@ export default function FacilitiesManagement() {
       endTime: "06:00 PM",
       image: "",
       isDistributed: false,
-      locationBatches: [{ block: "Main Building", level: "Level 1", quantity: "" }]
+      locationBatches: [{ block: "Main Building", level: "Level 1", quantity: "" }],
+      description: "",
+      amenities: [],
+      rules: []
     });
     setView("manage");
   };
@@ -571,6 +587,122 @@ export default function FacilitiesManagement() {
                         <p className="text-xs text-slate-500 mt-1">Focus this box and paste</p>
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Dynamic Details: Description, Amenities, Rules */}
+                <div className="space-y-8 pt-8 border-t border-slate-100">
+                  {/* Description */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                      <Info className="h-4 w-4 text-blue-500" />
+                      About This {activeTab.slice(0, -1)}
+                    </label>
+                    <textarea 
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      className="w-full px-5 py-4 bg-slate-50 border-none rounded-2xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:bg-white shadow-inner transition-all min-h-[120px]"
+                      placeholder={`Enter a detailed description of the ${activeTab.slice(0, -1).toLowerCase()}...`}
+                    />
+                  </div>
+
+                  {/* Amenities */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-violet-500" />
+                      Amenities & Features
+                    </label>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {formData.amenities.map((amenity, idx) => (
+                        <span key={idx} className="px-3 py-1.5 bg-violet-50 text-violet-600 rounded-xl text-[10px] font-black uppercase flex items-center gap-2 border border-violet-100 animate-in zoom-in-50 duration-200">
+                          {amenity}
+                          <button onClick={() => setFormData({...formData, amenities: formData.amenities.filter((_, i) => i !== idx)})} className="hover:text-red-500">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        id="amenityInput"
+                        className="flex-1 px-5 py-3 bg-slate-50 border-none rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500/20 shadow-inner"
+                        placeholder="Add an amenity (e.g. Wi-Fi, Projector)..."
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const val = e.target.value.trim();
+                            if (val && !formData.amenities.includes(val)) {
+                              setFormData({...formData, amenities: [...formData.amenities, val]});
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                      />
+                      <button 
+                        onClick={() => {
+                          const input = document.getElementById('amenityInput');
+                          const val = input.value.trim();
+                          if (val && !formData.amenities.includes(val)) {
+                            setFormData({...formData, amenities: [...formData.amenities, val]});
+                            input.value = '';
+                          }
+                        }}
+                        className="px-4 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition-colors shadow-lg shadow-violet-200"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Rules */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-amber-500" />
+                      Usage Rules & Policies
+                    </label>
+                    <div className="space-y-2 mb-3">
+                      {formData.rules.map((rule, idx) => (
+                        <div key={idx} className="flex items-center gap-3 p-3 bg-amber-50/30 rounded-xl border border-amber-100/50 group animate-in slide-in-from-left-2 duration-200">
+                          <div className="h-5 w-5 bg-amber-100 text-amber-600 rounded flex items-center justify-center text-[10px] font-black">{idx+1}</div>
+                          <span className="flex-1 text-xs font-semibold text-slate-600">{rule}</span>
+                          <button onClick={() => setFormData({...formData, rules: formData.rules.filter((_, i) => i !== idx)})} className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        id="ruleInput"
+                        className="flex-1 px-5 py-3 bg-slate-50 border-none rounded-xl text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500/20 shadow-inner"
+                        placeholder="Add a rule (e.g. No food allowed)..."
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const val = e.target.value.trim();
+                            if (val && !formData.rules.includes(val)) {
+                              setFormData({...formData, rules: [...formData.rules, val]});
+                              e.target.value = '';
+                            }
+                          }
+                        }}
+                      />
+                      <button 
+                        onClick={() => {
+                          const input = document.getElementById('ruleInput');
+                          const val = input.value.trim();
+                          if (val && !formData.rules.includes(val)) {
+                            setFormData({...formData, rules: [...formData.rules, val]});
+                            input.value = '';
+                          }
+                        }}
+                        className="px-4 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-colors shadow-lg shadow-amber-200"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 

@@ -2,6 +2,7 @@ package com.booking.booking_management.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.List;
 
 @Document(collection = "resources")
 public class Resource {
@@ -14,6 +15,9 @@ public class Resource {
     private String location;
     private String status;
     private String image;
+    private String description;
+    private List<String> amenities;
+    private List<String> rules;
 
     public Resource() {}
 
@@ -40,4 +44,13 @@ public class Resource {
 
     public String getImage() { return image; }
     public void setImage(String image) { this.image = image; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public List<String> getAmenities() { return amenities; }
+    public void setAmenities(List<String> amenities) { this.amenities = amenities; }
+
+    public List<String> getRules() { return rules; }
+    public void setRules(List<String> rules) { this.rules = rules; }
 }

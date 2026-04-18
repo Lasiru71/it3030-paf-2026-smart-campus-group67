@@ -125,6 +125,32 @@ const generateSlots = () => {
   return slots;
 };
 
+/* ─── Mapping: labels to icons for dynamic amenities ─── */
+const amenityIconMap = {
+  "Wi-Fi": Wifi,
+  "Air Conditioning": Wind,
+  "AC": Wind,
+  "Projector": Projector,
+  "Projector & Screen": Projector,
+  "Sound System": Mic,
+  "Mic": Mic,
+  "Sound System / Mic": Mic,
+  "Smartboard": Monitor,
+  "Desktop Computers": Monitor,
+  "Info Screens": Monitor,
+  "Display Screen": Monitor,
+  "Emergency Exits": DoorOpen,
+  "Soundproof Doors": DoorOpen,
+  "Open Access": DoorOpen,
+  "Safety Equipment": ShieldCheck,
+  "Charging Points": Zap,
+  "Power Stations": Zap,
+  "Power Outlets": Zap,
+  "Power Outlets (Per Row)": Zap,
+  "Tiered Seating": Users,
+  "Lab Manuals": BookOpen,
+};
+
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Component ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const FacilityDetailPage = () => {
   const { resourceId } = useParams();
@@ -180,8 +206,19 @@ const FacilityDetailPage = () => {
     );
   }
 
-  const amenities = getAmenities(resource.category);
-  const rules = getRules(resource.category);
+  // Handle Dynamic Amenities with Fallback
+  const amenities = (resource.amenities && resource.amenities.length > 0)
+    ? resource.amenities.map(label => ({
+        label,
+        icon: amenityIconMap[label] || Sparkles,
+        available: true
+      }))
+    : getAmenities(resource.category);
+
+  // Handle Dynamic Rules with Fallback
+  const rules = (resource.rules && resource.rules.length > 0)
+    ? resource.rules
+    : getRules(resource.category);
   const occupancyPercent = resource.capacity > 0
     ? Math.round(((resource.capacity - resource.availableSpaces) / resource.capacity) * 100)
     : 0;
@@ -332,14 +369,20 @@ const FacilityDetailPage = () => {
                   </div>
                   About This Facility
                 </h2>
-                <p className="text-slate-600 leading-relaxed text-[15px]">
-                  <span className="font-bold text-slate-800">{resource.name}</span> is a
-                  {resource.category === "L Halls" && " state-of-the-art lecture hall designed for large-scale academic sessions, guest lectures, and university events. Equipped with modern audio-visual systems and tiered seating for optimum visibility."}
-                  {resource.category === "Labs" && " high-tech laboratory environment built for hands-on practical sessions, research activities, and collaborative experiments. Features industry-grade equipment and safety infrastructure."}
-                  {resource.category === "Meeting" && " professional meeting room ideal for faculty discussions, departmental meetings, and small-group workshops. Offers a quiet, soundproof environment with modern conferencing tools."}
-                  {resource.category === "Common" && " shared campus space perfect for student collaboration, informal study sessions, and leisure activities. An open-access zone designed to foster community engagement."}
-                  {!["L Halls", "Labs", "Meeting", "Common"].includes(resource.category) && ` campus resource categorized under ${resource.category}. Available for booking and general university use. Contact administration for specific usage guidelines.`}
-                </p>
+                {resource.description ? (
+                  <p className="text-slate-600 leading-relaxed text-[15px] whitespace-pre-line">
+                    {resource.description}
+                  </p>
+                ) : (
+                  <p className="text-slate-600 leading-relaxed text-[15px]">
+                    <span className="font-bold text-slate-800">{resource.name}</span> is a
+                    {resource.category === "L Halls" && " state-of-the-art lecture hall designed for large-scale academic sessions, guest lectures, and university events. Equipped with modern audio-visual systems and tiered seating for optimum visibility."}
+                    {resource.category === "Labs" && " high-tech laboratory environment built for hands-on practical sessions, research activities, and collaborative experiments. Features industry-grade equipment and safety infrastructure."}
+                    {resource.category === "Meeting" && " professional meeting room ideal for faculty discussions, departmental meetings, and small-group workshops. Offers a quiet, soundproof environment with modern conferencing tools."}
+                    {resource.category === "Common" && " shared campus space perfect for student collaboration, informal study sessions, and leisure activities. An open-access zone designed to foster community engagement."}
+                    {!["L Halls", "Labs", "Meeting", "Common"].includes(resource.category) && ` campus resource categorized under ${resource.category}. Available for booking and general university use. Contact administration for specific usage guidelines.`}
+                  </p>
+                )}
                 <p className="text-slate-500 mt-4 text-sm">
                   {isDistributed ? (
                     "This resource is distributed across multiple locations on campus to ensure maximum accessibility for students and staff."
