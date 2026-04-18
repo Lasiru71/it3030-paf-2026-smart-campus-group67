@@ -240,7 +240,7 @@ const SignupPage = () => {
                           const { data } = await googleLogin({ idToken: credentialResponse.credential });
                           loginUser(data);
                           navigate(ROUTES.HOME);
-                        } catch (err) {
+                        } catch {
                           setServerError("Google registration failed. Please try again.");
                         } finally {
                           setLoading(false);

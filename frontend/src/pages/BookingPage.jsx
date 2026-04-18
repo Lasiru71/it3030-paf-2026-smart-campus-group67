@@ -14,7 +14,18 @@ const BookingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { auth } = useAuth();
+  const [error, setError] = useState("");
   const [resource, setResource] = useState(location.state?.resource || null);
+  const [formData, setFormData] = useState({
+    members: 1,
+    bookingDate: "",
+    bookingTime: "",
+    durationHours: 1,
+    durationMinutes: 0,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [liveTime, setLiveTime] = useState(new Date());
 
   useEffect(() => {
     if (!resource && resourceId) {
@@ -31,18 +42,6 @@ const BookingPage = () => {
     }
   }, [resource, resourceId]);
 
-  const [formData, setFormData] = useState({
-    members: 1,
-    bookingDate: "",
-    bookingTime: "",
-    durationHours: 1,
-    durationMinutes: 0,
-  });
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
-  const [liveTime, setLiveTime] = useState(new Date());
   const [resourceBookings, setResourceBookings] = useState([]);
 
   useEffect(() => {

@@ -711,10 +711,6 @@ function SpaceManagementPanel() {
   const [updatingId, setUpdatingId] = useState(null);
   const [editValue, setEditValue] = useState("");
 
-  useEffect(() => {
-    fetchResources();
-  }, []);
-
   const fetchResources = () => {
     setLoading(true);
     resourceService.getAllResources()
@@ -729,6 +725,13 @@ function SpaceManagementPanel() {
         setLoading(false);
       });
   };
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchResources();
+    };
+    load();
+  }, []);
 
   const handleStatusChange = (id, newStatus) => {
     resourceService.updateResourceStatus(id, newStatus)
@@ -1110,12 +1113,6 @@ function IndividualBookingsPanel() {
     doc.save(`Individual_Bookings_Report_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
-  const getStatusColor = (status) => {
-    if (status === "APPROVED") return "bg-emerald-100 text-emerald-700 border-emerald-200";
-    if (status === "REJECTED") return "bg-red-100 text-red-700 border-red-200";
-    return "bg-amber-100 text-amber-700 border-amber-200";
-  };
-
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
       <div className="flex items-center justify-between mb-8">
@@ -1358,11 +1355,6 @@ function TicketsPanel() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedTech, setSelectedTech] = useState("");
 
-  useEffect(() => {
-    fetchTickets();
-    fetchTechnicians();
-  }, []);
-
   const fetchTickets = async () => {
     try {
       const res = await axiosInstance.get("/api/incidents");
@@ -1382,6 +1374,14 @@ function TicketsPanel() {
       console.error("Failed to fetch technicians", err);
     }
   };
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchTickets();
+      await fetchTechnicians();
+    };
+    load();
+  }, []);
 
   const handleAssign = async () => {
     if (!selectedTech) return;
@@ -2455,7 +2455,7 @@ export default function AdminDashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filtered.map((user, i) => (
+                      {filtered.map((user) => (
                         <tr
                           key={user.id}
                           className="hover:bg-slate-50/50 transition-colors"
@@ -2525,7 +2525,7 @@ export default function AdminDashboardPage() {
             onClose={() => setIsAddModalOpen(false)}
             onAdd={(data) => {
               axiosInstance.post("/api/auth/signup", data)
-                .then(res => {
+                .then(() => {
                   // After signup, we might need to fetch the full list again to get the ID, 
                   // or the backend might return the user in the data field of ApiResponse.
                   setToast("User created successfully in database.");

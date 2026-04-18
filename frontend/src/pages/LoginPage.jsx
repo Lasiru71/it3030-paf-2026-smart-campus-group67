@@ -17,7 +17,6 @@ const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
   // Validate form fields
@@ -176,15 +175,12 @@ const LoginPage = () => {
                       size="large"
                       width="100%"
                       onSuccess={async (credentialResponse) => {
-                        setGoogleLoading(true);
                         try {
                           const { data } = await googleLogin({ idToken: credentialResponse.credential });
                           loginUser(data);
                           navigate(ROUTES.HOME);
-                        } catch (err) {
+                        } catch {
                           setServerError("Google authentication failed. Please try again.");
-                        } finally {
-                          setGoogleLoading(false);
                         }
                       }}
                       onError={() => {

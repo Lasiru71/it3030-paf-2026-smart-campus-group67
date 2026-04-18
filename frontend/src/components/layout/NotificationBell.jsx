@@ -6,7 +6,6 @@ const NotificationBell = () => {
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isOpen, setIsOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
     const dropdownRef = useRef(null);
 
     const fetchNotifications = async () => {
@@ -21,7 +20,11 @@ const NotificationBell = () => {
     };
 
     useEffect(() => {
-        fetchNotifications();
+        const load = async () => {
+            await fetchNotifications();
+        };
+        load();
+        
         // Polling every 30 seconds
         const interval = setInterval(fetchNotifications, 30000);
         return () => clearInterval(interval);
