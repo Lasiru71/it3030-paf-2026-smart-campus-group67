@@ -15,6 +15,7 @@ import { bookingService } from "../services/bookingService";
 import { resourceService } from "../services/resourceService";
 import axiosInstance from "../services/axiosInstance";
 import FacilitiesManagement from "../components/FacilitiesManagement";
+import NotificationBell from "../components/layout/NotificationBell";
 
 const stats = [
   {
@@ -1995,10 +1996,7 @@ export default function AdminDashboardPage() {
                 className="pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 transition"
               />
             </div>
-            <button className="relative p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors text-slate-500">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
-            </button>
+            <NotificationBell />
           </div>
         </header>
 

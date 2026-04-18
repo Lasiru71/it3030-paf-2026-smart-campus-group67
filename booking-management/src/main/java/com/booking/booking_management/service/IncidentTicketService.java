@@ -71,13 +71,28 @@ public class IncidentTicketService {
 
         IncidentTicket savedTicket = repository.save(ticket);
         
-        // Trigger notification
+        // Trigger notification for student
         notificationService.createNotification(
                 savedTicket.getStudentId(),
                 "Ticket Created",
                 "Your incident ticket for " + savedTicket.getResource() + " has been logged successfully.",
                 "TICKET"
         );
+
+        // Trigger notification for admins
+        try {
+            List<User> admins = userRepository.findByRole(Role.ADMIN);
+            for (User admin : admins) {
+                notificationService.createNotification(
+                        admin.getEmail(),
+                        "New Maintenance Ticket",
+                        "A new maintenance ticket for " + savedTicket.getResource() + " has been submitted by " + savedTicket.getStudentId() + ".",
+                        "TICKET"
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to notify admins of ticket: " + e.getMessage());
+        }
 
         return savedTicket;
     }

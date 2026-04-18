@@ -24,6 +24,9 @@ public class BookingService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private com.booking.booking_management.repository.UserRepository userRepository;
+
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
@@ -103,13 +106,28 @@ public class BookingService {
 
         Booking savedBooking = bookingRepository.save(booking);
         
-        // Trigger notification
+        // Trigger notification for user
         notificationService.createNotification(
                 savedBooking.getUserEmail(),
                 "Booking Submitted",
                 "Your booking for " + savedBooking.getResourceName() + " has been successfully submitted and is pending approval.",
                 "BOOKING"
         );
+
+        // Trigger notification for admins
+        try {
+            List<com.booking.booking_management.model.User> admins = userRepository.findByRole(com.booking.booking_management.enums.Role.ADMIN);
+            for (com.booking.booking_management.model.User admin : admins) {
+                notificationService.createNotification(
+                        admin.getEmail(),
+                        "New Booking Request",
+                        "A new booking for " + savedBooking.getResourceName() + " has been submitted by " + savedBooking.getUserEmail() + ".",
+                        "BOOKING"
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to notify admins: " + e.getMessage());
+        }
 
         return savedBooking;
     }
