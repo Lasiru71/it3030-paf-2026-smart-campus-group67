@@ -288,6 +288,9 @@ export default function FacilitiesManagement() {
                           <option>F Block</option>
                           <option>Engineering Block</option>
                           <option>Business Block</option>
+                          <option>Arts Pavillion</option>
+                          <option>Science Block</option>
+                          <option>Student Hub</option>
                         </select>
                         <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                       </div>
@@ -341,6 +344,9 @@ export default function FacilitiesManagement() {
                           <option>F Block</option>
                           <option>Engineering Block</option>
                           <option>Business Block</option>
+                          <option>Arts Pavillion</option>
+                          <option>Science Block</option>
+                          <option>Student Hub</option>
                         </select>
                         <select 
                           value={formData.level}
