@@ -69,7 +69,7 @@ const TrackTicketPage = () => {
                             type="text"
                             value={ticketId}
                             onChange={(e) => setTicketId(e.target.value)}
-                            placeholder="Paste your Ticket ID here (e.g., 60f7b...)"
+                            placeholder="Paste your Ticket ID here (e.g., 69e2a...)"
                             className="flex-1 bg-transparent border-none text-lg font-bold text-slate-800 focus:outline-none focus:ring-0 placeholder:text-slate-300 py-4"
                         />
                         <button

@@ -13,9 +13,9 @@ import {
   AlertTriangle, 
   Phone
 } from "lucide-react";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-import { ROUTES, BASE_URL } from "../utils/constants";
+import { ROUTES } from "../utils/constants";
+import axiosInstance from "../services/axiosInstance";
 import Button from "../components/common/Button";
 
 const categories = [
@@ -110,10 +110,9 @@ const MakeTicketPage = () => {
     });
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/incidents`, data, {
+      const response = await axiosInstance.post("/api/incidents", data, {
         headers: {
-          "Content-Type": "multipart/form-data",
-          "Authorization": `Bearer ${auth.token}`
+          "Content-Type": "multipart/form-data"
         },
       });
       setSuccess(response.data);
@@ -138,14 +137,14 @@ const MakeTicketPage = () => {
           
           <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Ticket Reference ID</p>
-            <p className="text-2xl font-mono font-bold text-blue-700 uppercase">
-              TIX-{success.id.substring(success.id.length - 6)}
+            <p className="text-xl font-mono font-bold text-blue-700 break-all">
+              {success.id}
             </p>
           </div>
 
           <div className="space-y-3">
-            <Button fullWidth onClick={() => navigate(ROUTES.MY_BOOKINGS)}>
-              View My Tickets
+            <Button fullWidth onClick={() => navigate(ROUTES.TRACK_TICKET)}>
+              Track My Ticket
             </Button>
             <Button variant="ghost" fullWidth onClick={() => { setSuccess(null); setFormData({ ...formData, description: "", resource: "" }); setImages([]); }}>
               Report Another Issue
@@ -344,7 +343,7 @@ const MakeTicketPage = () => {
                   <Button variant="ghost" type="button" onClick={() => navigate(-1)}>
                     Cancel
                   </Button>
-                  <Button type="submit" isLoading={loading}>
+                  <Button type="submit" loading={loading}>
                     Submit Ticket
                   </Button>
                 </div>
