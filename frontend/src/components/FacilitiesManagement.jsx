@@ -369,7 +369,7 @@ export default function FacilitiesManagement() {
                 {/* Grid row 2: Location (Block & Level) */}
                 <div className="space-y-4 pt-4">
                     <div className="flex items-center justify-between mb-2">
-                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Location Detail <span className="text-red-500">*</span></label>
+                        <label className="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">{formData.isDistributed ? 'Location Detail' : ''}</label>
                         {formData.isDistributed && (
                           <button 
                             onClick={() => setFormData({
@@ -464,12 +464,13 @@ export default function FacilitiesManagement() {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="relative">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Location Detail / Block <span className="text-red-500">*</span></p>
                           <select 
                             value={formData.block}
                             onChange={(e) => setFormData({...formData, block: e.target.value})}
                             className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold text-slate-700 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20 shadow-inner"
                           >
-                            <option>Select Block</option>
+                            <option value="">Select Block</option>
                             <option>Main Building</option>
                             <option>G Block</option>
                             <option>F Block</option>
@@ -479,66 +480,22 @@ export default function FacilitiesManagement() {
                             <option>Science Block</option>
                             <option>Student Hub</option>
                           </select>
-                          <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                          <ChevronDown className="absolute right-5 bottom-4 h-4 w-4 text-slate-400 pointer-events-none" />
                         </div>
-                        <div className="md:col-span-2">
-                          <div className="bg-slate-50 rounded-2xl p-4 shadow-inner border border-transparent focus-within:border-blue-200 transition-all">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Select Levels / Floors (Multi-Select)</p>
-                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                              {[...Array(10)].map((_, i) => {
-                                const levelVal = `Level ${i+1}`;
-                                const isSelected = formData.level.includes(levelVal);
-                                return (
-                                  <button
-                                    key={i}
-                                    type="button"
-                                    onClick={() => {
-                                      const newLevels = isSelected 
-                                        ? formData.level.filter(l => l !== levelVal)
-                                        : [...formData.level, levelVal];
-                                      setFormData({...formData, level: newLevels});
-                                    }}
-                                    className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
-                                      isSelected 
-                                        ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200 scale-[1.05]" 
-                                        : "bg-white border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600"
-                                    }`}
-                                  >
-                                    L{i+1}
-                                  </button>
-                                );
-                              })}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const isSelected = formData.level.includes("Basement");
-                                  const newLevels = isSelected 
-                                    ? formData.level.filter(l => l !== "Basement")
-                                    : [...formData.level, "Basement"];
-                                  setFormData({...formData, level: newLevels});
-                                }}
-                                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
-                                  formData.level.includes("Basement")
-                                    ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200 scale-[1.05]" 
-                                    : "bg-white border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600"
-                                }`}
-                              >
-                                B
-                              </button>
-                            </div>
-                            {formData.level.length > 0 && (
-                              <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-slate-200/50">
-                                {formData.level.map((l, i) => (
-                                  <span key={i} className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase flex items-center gap-1.5 border border-blue-100">
-                                    {l}
-                                    <button onClick={() => setFormData({...formData, level: formData.level.filter(lvl => lvl !== l)})} className="hover:text-red-500">
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                        <div className="relative">
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Level / Floor <span className="text-red-500">*</span></p>
+                          <select 
+                            value={formData.level[0] || ""}
+                            onChange={(e) => setFormData({...formData, level: [e.target.value]})}
+                            className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold text-slate-700 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/20 shadow-inner"
+                          >
+                            <option value="">Select Level</option>
+                            {[...Array(10)].map((_, i) => (
+                              <option key={i+1} value={`Level ${i+1}`}>Level {i+1}</option>
+                            ))}
+                            <option value="Basement">Basement</option>
+                          </select>
+                          <ChevronDown className="absolute right-5 bottom-4 h-4 w-4 text-slate-400 pointer-events-none" />
                         </div>
                       </div>
                     )}
