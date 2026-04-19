@@ -338,12 +338,12 @@ const StaffDashboardPage = () => {
                                                const isStudent = c.authorId === selectedTicket.studentId;
                                                const commentId = c.id || c._id;
                                                return (
-                                                  <div key={commentId || i} className={`flex flex-col ${isStudent ? "items-end text-right" : "items-start text-left"} group relative border-b border-slate-200/40 last:border-0 pb-6`}>
+                                                  <div key={commentId || i} className={`flex flex-col ${isStudent ? "items-start text-left" : "items-end text-right"} group relative border-b border-slate-200/40 last:border-0 pb-6`}>
                                                      <p className="mb-2 text-[8px] font-black uppercase tracking-widest text-slate-400">
                                                          {c.authorName} • {isStudent ? "STUDENT" : "STAFF"} • {formatTimestamp(c.timestamp)}
                                                      </p>
                                                      
-                                                     <div className={`flex items-start gap-4 ${isStudent ? "flex-row-reverse" : "flex-row"} max-w-[100%]`}>
+                                                     <div className={`flex items-start gap-4 ${isStudent ? "flex-row" : "flex-row-reverse"} max-w-[100%]`}>
                                                         <div className={`max-w-[85%] text-[11px] font-bold leading-relaxed antialiased ${isStudent ? "text-slate-800" : "text-slate-600"}`}>
                                                            {editingCommentId === commentId ? (
                                                               <div className="flex flex-col gap-3 min-w-[240px] mt-2 bg-white p-4 rounded-2xl shadow-xl border border-slate-100">

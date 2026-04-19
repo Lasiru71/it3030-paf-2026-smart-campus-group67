@@ -1802,8 +1802,8 @@ function TicketsPanel() {
                       const isStudent = comment.authorId === selectedTicket.studentId;
                       const commentId = comment.id || comment._id;
                       return (
-                        <div key={commentId || i} className={`flex flex-col ${isStudent ? "items-end" : "items-start"} group relative mb-6 last:mb-0`}>
-                          <div className={`flex items-center gap-3 mb-2 px-2 ${isStudent ? "flex-row-reverse" : "flex-row"}`}>
+                        <div key={commentId || i} className={`flex flex-col ${isStudent ? "items-start" : "items-end"} group relative mb-6 last:mb-0`}>
+                          <div className={`flex items-center gap-3 mb-2 px-2 ${isStudent ? "flex-row" : "flex-row-reverse"}`}>
                             <div className="h-6 w-6 rounded-full bg-slate-200 flex items-center justify-center border border-white shadow-sm">
                                <User className="h-3 w-3 text-slate-500" />
                             </div>
@@ -1812,7 +1812,7 @@ function TicketsPanel() {
                             </p>
                           </div>
                           
-                          <div className={`flex items-end gap-3 max-w-[95%] ${isStudent ? "flex-row-reverse" : "flex-row"}`}>
+                          <div className={`flex items-end gap-3 max-w-[95%] ${isStudent ? "flex-row" : "flex-row-reverse"}`}>
                             <div className={`relative px-6 py-4 rounded-[1.8rem] shadow-sm text-xs font-bold leading-relaxed antialiased transition-all ${
                               isStudent 
                                 ? "bg-white text-slate-800 rounded-tr-none border border-slate-100" 
