@@ -33,10 +33,12 @@ import {
   Info,
   Sparkles,
   ShieldCheck,
-  Zap
+  Zap,
+  Calendar
 } from "lucide-react";
 import { renderLocation } from "../utils/formatters";
 import { facilityService } from "../services/facilityService";
+import { bookingService } from "../services/bookingService";
 
 // Mock Data
 // Moved initialFacilities to facilityService.js
@@ -64,6 +66,51 @@ export default function FacilitiesManagement() {
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
   const [facilities, setFacilities] = useState([]);
+  
+  // Schedule state
+  const [schedulingFacility, setSchedulingFacility] = useState(null);
+  const [activeDay, setActiveDay] = useState(0);
+  const [bookings, setBookings] = useState([]);
+  const [slots, setSlots] = useState([]);
+  const dayLabels = ["Today", "Tomorrow"];
+
+  useEffect(() => {
+    if (view === "schedule") {
+      bookingService.getAllBookings().then(res => setBookings(res || [])).catch(console.error);
+    }
+  }, [view]);
+
+  useEffect(() => {
+    if (view !== "schedule" || !schedulingFacility) return;
+    
+    const computedSlots = [];
+    const starts = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+    
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + activeDay);
+    const pad = (n) => String(n).padStart(2, '0');
+    const targetDateString = `${targetDate.getFullYear()}-${pad(targetDate.getMonth()+1)}-${pad(targetDate.getDate())}`;
+
+    const dateBookings = bookings.filter(b => 
+      b.resourceId === schedulingFacility.id && 
+      b.bookingDate === targetDateString &&
+      (b.status === "APPROVED" || b.status === "PENDING" || b.status === "CONFIRMED")
+    );
+
+    starts.forEach((s) => {
+      const startHr = parseInt(s.split(":")[0]);
+      const endHrStr = String(startHr + 1).padStart(2, "0");
+      let isBooked = false;
+      dateBookings.forEach(b => {
+        const bStartHr = parseInt(b.bookingTime.split(":")[0]);
+        const duration = b.durationHours || 1; 
+        const bEndHr = bStartHr + duration;
+        if (startHr >= bStartHr && startHr < bEndHr) isBooked = true; 
+      });
+      computedSlots.push({ start: s, end: `${endHrStr}:00`, booked: isBooked });
+    });
+    setSlots(computedSlots);
+  }, [activeDay, bookings, schedulingFacility, view]);
 
   useEffect(() => {
     const fetchFacilities = async () => {
@@ -750,6 +797,62 @@ export default function FacilitiesManagement() {
     );
   }
 
+  if (view === "schedule" && schedulingFacility) {
+    return (
+      <main className="flex-1 overflow-y-auto bg-slate-50/50 p-6 lg:p-10 animate-in fade-in duration-500">
+         <div className="flex items-center gap-4 mb-8">
+            <button onClick={() => {setView("dashboard"); setSchedulingFacility(null);}} className="p-2 bg-white rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 transition-all shadow-sm">
+                <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div>
+               <h2 className="text-2xl font-black text-slate-800 tracking-tight">Availability Schedule</h2>
+               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">{schedulingFacility.name} • {schedulingFacility.category}</p>
+            </div>
+         </div>
+
+         <div className="bg-white rounded-3xl p-8 shadow-xl border border-slate-100 max-w-4xl mx-auto">
+            <div className="flex gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar border-b border-slate-50">
+              {dayLabels.map((day, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveDay(i)}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                    activeDay === i
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-200"
+                      : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100"
+                  }`}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+              {slots.map((slot, i) => (
+                 <div
+                   key={i}
+                   className={`relative p-5 rounded-2xl border text-center transition-all duration-200 ${
+                     slot.booked
+                       ? "bg-red-50 border-red-100"
+                       : "bg-emerald-50 border-emerald-100 hover:border-emerald-200 hover:shadow-md cursor-pointer hover:scale-[1.02]"
+                   }`}
+                 >
+                   <div className={`absolute top-3 right-3 h-2 w-2 rounded-full ${slot.booked ? "bg-red-400" : "bg-emerald-500"}`} />
+                   <Clock className={`h-5 w-5 mx-auto mb-3 ${slot.booked ? "text-red-400" : "text-emerald-500"}`} />
+                   <p className={`text-xs font-black ${slot.booked ? "text-red-700" : "text-emerald-700"}`}>
+                     {slot.start} – {slot.end}
+                   </p>
+                   <p className={`text-[10px] font-bold mt-1.5 uppercase tracking-widest ${slot.booked ? "text-red-500" : "text-emerald-500"}`}>
+                     {slot.booked ? "Reserved" : "Available"}
+                   </p>
+                 </div>
+              ))}
+            </div>
+         </div>
+      </main>
+    );
+  }
+
   // Dashboard View
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50/50 p-6 lg:p-10 space-y-8 animate-in fade-in duration-500">
@@ -878,6 +981,9 @@ export default function FacilitiesManagement() {
                         <span className="text-xs font-bold">{renderLocation(f.location)}</span>
                       </div>
                       <div className="flex gap-1.5">
+                        <button onClick={() => { setSchedulingFacility(f); setView("schedule"); }} className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="View Schedule">
+                          <Calendar className="h-4 w-4" />
+                        </button>
                         <button onClick={() => handleEdit(f)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit">
                           <Edit className="h-4 w-4" />
                         </button>
@@ -915,6 +1021,7 @@ export default function FacilitiesManagement() {
                       </td>
                       <td className="px-8 py-5 text-right">
                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => { setSchedulingFacility(f); setView("schedule"); }} className="p-2 text-slate-400 hover:text-emerald-600 transition-all" title="View Schedule"><Calendar className="h-4 w-4" /></button>
                           <button onClick={() => handleDuplicate(f)} className="p-2 text-slate-400 hover:text-emerald-600 transition-all" title="Duplicate"><Copy className="h-4 w-4" /></button>
                           <button onClick={() => handleEdit(f)} className="p-2 text-slate-400 hover:text-blue-600 transition-all" title="Edit"><Edit className="h-4 w-4" /></button>
                           <button onClick={() => handleDelete(f.id)} className="p-2 text-slate-400 hover:text-red-500 transition-all" title="Delete"><Trash2 className="h-4 w-4" /></button>
