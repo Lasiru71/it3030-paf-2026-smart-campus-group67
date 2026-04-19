@@ -95,6 +95,24 @@ public class IncidentTicketController {
         return ResponseEntity.ok(service.addComment(id, comment));
     }
 
+    @PatchMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<IncidentTicket> updateComment(
+            @PathVariable String id,
+            @PathVariable String commentId,
+            @RequestParam String userId,
+            @RequestBody String newText) {
+        return ResponseEntity.ok(service.updateComment(id, commentId, userId, newText));
+    }
+
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<IncidentTicket> deleteComment(
+            @PathVariable String id,
+            @PathVariable String commentId,
+            @RequestParam String userId,
+            @RequestParam boolean isAdmin) {
+        return ResponseEntity.ok(service.deleteComment(id, commentId, userId, isAdmin));
+    }
+
     @GetMapping("/images/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {

@@ -19,6 +19,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class IncidentTicketService {
@@ -121,7 +123,85 @@ public class IncidentTicketService {
         if (ticket.getComments() == null) {
             ticket.setComments(new ArrayList<>());
         }
+        if (comment.getId() == null) {
+            comment.setId(java.util.UUID.randomUUID().toString());
+        }
+        // Ensure timestamp is present and in ISO format
+        if (comment.getTimestamp() == null || comment.getTimestamp().trim().isEmpty()) {
+            comment.setTimestamp(java.time.Instant.now().toString());
+        }
         ticket.getComments().add(comment);
+        return repository.save(ticket);
+    }
+
+    public IncidentTicket updateComment(String ticketId, String commentId, String userId, String newText) {
+        IncidentTicket ticket = repository.findById(ticketId).orElseThrow(() -> new RuntimeException("Ticket not found"));
+        if (ticket.getComments() != null) {
+            boolean found = false;
+            for (IncidentTicket.TicketComment c : ticket.getComments()) {
+                // Check both ID fields to be safe against different serialization formats
+                String cid = c.getId();
+                if (cid != null && cid.equals(commentId)) {
+                    if (!c.getAuthorId().equals(userId)) {
+                        throw new RuntimeException("Unauthorized: You can only edit your own comments.");
+                    }
+                    
+                    // 15-minute window check
+                    try {
+                        if (c.getTimestamp() != null) {
+                            java.time.Instant postedTime = java.time.Instant.parse(c.getTimestamp());
+                            if (java.time.Duration.between(postedTime, java.time.Instant.now()).toMinutes() > 15) {
+                                throw new RuntimeException("Unauthorized: The 15-minute window for editing has expired.");
+                            }
+                        }
+                    } catch (RuntimeException e) {
+                        if (e.getMessage().contains("expired")) throw e;
+                    } catch (Exception e) {
+                        System.err.println("Warning: Unparseable timestamp in updateComment: " + c.getTimestamp());
+                    }
+                    
+                    c.setText(newText);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                System.err.println("Comment not found for ID: " + commentId + " in ticket: " + ticketId);
+            }
+        }
+        return repository.save(ticket);
+    }
+
+    public IncidentTicket deleteComment(String ticketId, String commentId, String userId, boolean isAdmin) {
+        IncidentTicket ticket = repository.findById(ticketId).orElseThrow(() -> new RuntimeException("Ticket not found"));
+        if (ticket.getComments() != null) {
+            ticket.getComments().removeIf(c -> {
+                String cid = c.getId();
+                if (cid != null && cid.equals(commentId)) {
+                    if (isAdmin) return true; // Admin bypass
+                    
+                    if (c.getAuthorId() != null && c.getAuthorId().equals(userId)) {
+                        // 15-minute window check for authors
+                        try {
+                            if (c.getTimestamp() != null) {
+                                java.time.Instant postedTime = java.time.Instant.parse(c.getTimestamp());
+                                if (java.time.Duration.between(postedTime, java.time.Instant.now()).toMinutes() > 15) {
+                                    throw new RuntimeException("Unauthorized: The 15-minute window for deleting has expired.");
+                                }
+                            }
+                        } catch (RuntimeException e) {
+                            if (e.getMessage().contains("expired")) throw e;
+                        } catch (Exception e) {
+                            System.err.println("Warning: Unparseable timestamp in deleteComment: " + c.getTimestamp());
+                        }
+                        return true;
+                    } else {
+                        throw new RuntimeException("Unauthorized: You cannot delete this comment.");
+                    }
+                }
+                return false;
+            });
+        }
         return repository.save(ticket);
     }
 }

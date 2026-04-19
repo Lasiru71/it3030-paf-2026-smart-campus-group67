@@ -181,14 +181,16 @@ public class IncidentTicket {
 
     // --- Inner Class for Comments ---
     public static class TicketComment {
+        private String id;
         private String authorId;
         private String authorName;
         private String text;
-        private LocalDateTime timestamp;
+        private String timestamp;
 
         public TicketComment() {}
 
-        public TicketComment(String authorId, String authorName, String text, LocalDateTime timestamp) {
+        public TicketComment(String id, String authorId, String authorName, String text, String timestamp) {
+            this.id = id;
             this.authorId = authorId;
             this.authorName = authorName;
             this.text = text;
@@ -201,7 +203,9 @@ public class IncidentTicket {
         public void setAuthorName(String authorName) { this.authorName = authorName; }
         public String getText() { return text; }
         public void setText(String text) { this.text = text; }
-        public LocalDateTime getTimestamp() { return timestamp; }
-        public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+        public String getTimestamp() { return timestamp; }
+        public void setTimestamp(String timestamp) { this.timestamp = timestamp; }
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
     }
 }
