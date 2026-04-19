@@ -1760,6 +1760,19 @@ export default function AdminDashboardPage() {
   const [roleFilter, setRoleFilter] = useState("All");
   const [hoveredRole, setHoveredRole] = useState(null);
 
+  // Read avatar from localStorage (set by AdminProfilePage when uploading a photo)
+  const [avatarSrc, setAvatarSrc] = useState(() => localStorage.getItem("admin_avatar") || null);
+
+  // Derive display name from auth context
+  const displayName = auth?.fullName || auth?.email || "Admin";
+
+  // Sync avatar if user uploads a new photo in AdminProfilePage
+  useEffect(() => {
+    const syncAvatar = () => setAvatarSrc(localStorage.getItem("admin_avatar") || null);
+    window.addEventListener("storage", syncAvatar);
+    return () => window.removeEventListener("storage", syncAvatar);
+  }, []);
+
   // Derive dynamic stats from users array (real or mock fallback)
   const adminCount = users.filter((u) => u.role === "ADMIN").length;
   const techCount = users.filter((u) => u.role === "TECHNICIAN").length;
@@ -2057,8 +2070,7 @@ export default function AdminDashboardPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const displayName = auth?.fullName || auth?.email || "Admin";
-  const avatarSrc = localStorage.getItem("admin_avatar");
+
 
   const handleDelete = (id) => {
     axiosInstance.delete(`/api/users/${id}`)
