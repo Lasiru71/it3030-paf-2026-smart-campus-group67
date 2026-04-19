@@ -947,7 +947,7 @@ export default function FacilitiesManagement() {
 
                         {/* Title and Category */}
                         <div className="flex-1 min-w-0 pr-2">
-                          <h4 className="text-lg font-black text-slate-800 leading-tight group-hover:text-blue-600 transition-colors truncate" title={f.name}>
+                          <h4 className="text-lg font-black text-slate-800 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2" title={f.name}>
                             {f.name}
                           </h4>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">{f.category}</p>
