@@ -2017,17 +2017,11 @@ export default function AdminDashboardPage() {
   };
 
   const generateBookingPDF = async (customData = null) => {
-<<<<<<< HEAD
-    setToast("Preparing your report... â³");
-    // If we have custom data (from BookingsPanel), use it. Otherwise, fetch fresh data.
-    let bookingsToReport = customData;
-=======
     setToast("Preparing your report... ⏳");
     try {
       // If called as an event handler, customData will be the event object.
       // We only want to use it if it's explicitly an array of bookings.
       let bookingsToReport = Array.isArray(customData) ? customData : null;
->>>>>>> origin/main
 
       if (!bookingsToReport) {
         const response = await bookingService.getAllBookings();
