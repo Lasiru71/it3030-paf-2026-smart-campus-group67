@@ -58,21 +58,24 @@ const ResourceCategories = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map(({ icon: Icon, title, desc, color }) => (
-            <div
-              key={title}
-              onClick={() => navigate(ROUTES.RESOURCES)}
-              className="group bg-white rounded-2xl p-6 shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-blue-300 hover:-translate-y-1 transition-all duration-200"
-            >
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 ${color}`}>
-                <Icon className="h-6 w-6" />
+          {categories.map((category) => {
+            const Icon = category.icon;
+            return (
+              <div
+                key={category.title}
+                onClick={() => navigate(ROUTES.RESOURCES)}
+                className="group bg-white rounded-2xl p-6 shadow-sm border border-slate-200 cursor-pointer hover:shadow-md hover:border-blue-300 hover:-translate-y-1 transition-all duration-200"
+              >
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 ${category.color}`}>
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-slate-900 font-semibold text-lg mb-1 group-hover:text-blue-700 transition-colors">
+                  {category.title}
+                </h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{category.desc}</p>
               </div>
-              <h3 className="text-slate-900 font-semibold text-lg mb-1 group-hover:text-blue-700 transition-colors">
-                {title}
-              </h3>
-              <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

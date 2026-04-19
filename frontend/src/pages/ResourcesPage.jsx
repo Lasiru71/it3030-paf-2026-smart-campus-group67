@@ -11,11 +11,16 @@ import {
   Info
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { renderLocation } from "../utils/formatters";
 import Button from "../components/common/Button";
 
 // Resources are now fetched from facilityService
 
-const categories = ["All", "L Halls", "Labs", "Meeting", "Common"];
+const categories = [
+  "All", 
+  "L Halls", "Labs", "Meeting", "Common", "Sports Facility", "Study Area",
+  "Equipment", "Electronics", "Audio/Visual", "Furniture"
+];
 
 const ResourcesPage = () => {
   const navigate = useNavigate();
@@ -24,6 +29,7 @@ const ResourcesPage = () => {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeBlock, setActiveBlock] = useState("All Blocks");
 
   useEffect(() => {
     const fetchResources = async () => {
@@ -43,11 +49,19 @@ const ResourcesPage = () => {
     fetchResources();
   }, []);
 
+  const blocks = ["All Blocks", ...new Set(resources.map(res => {
+    if (res.location?.startsWith("DISTRIBUTED:")) return "Multiple Locations";
+    return res.location?.split(',')[0] || "Unknown";
+  }).filter(b => b !== "Unknown"))];
+
   const filteredResources = resources.filter(res => {
     const matchesCategory = activeCategory === "All" || res.category === activeCategory;
+    const isDist = res.location?.startsWith("DISTRIBUTED:");
+    const resBlock = isDist ? "Multiple Locations" : res.location?.split(',')[0];
+    const matchesBlock = activeBlock === "All Blocks" || resBlock === activeBlock;
     const matchesSearch = (res.name?.toLowerCase() || "").includes(search.toLowerCase()) || 
                           (res.location?.toLowerCase() || "").includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesBlock && matchesSearch;
   });
 
   return (
@@ -87,21 +101,34 @@ const ResourcesPage = () => {
       {/* Filter Bar */}
       <section className="sticky top-16 z-30 bg-white/80 backdrop-blur border-b border-slate-200 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-            <Filter className="h-4 w-4 text-slate-400 mr-2 flex-shrink-0" />
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                  activeCategory === cat 
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-200" 
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+          <div className="flex items-center gap-4 py-1 grow overflow-x-auto no-scrollbar">
+            <Filter className="h-4 w-4 text-slate-400 mr-1 flex-shrink-0" />
+            <div className="flex items-center gap-2">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className="h-8 w-px bg-slate-200 mx-2" />
+
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest whitespace-nowrap">By Building</span>
+              <select 
+                value={activeBlock}
+                onChange={(e) => setActiveBlock(e.target.value)}
+                className="bg-slate-100 border-none text-slate-600 text-xs font-bold rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
               >
-                {cat}
-              </button>
-            ))}
+                {blocks.map(b => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="text-sm text-slate-500">
             Showing <span className="font-bold text-slate-800">{filteredResources.length}</span> resources
@@ -152,7 +179,12 @@ const ResourcesPage = () => {
                       </span>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                      <Button fullWidth size="sm" className="bg-white !text-black font-bold hover:bg-slate-100 shadow-xl">
+                      <Button 
+                        fullWidth 
+                        size="sm" 
+                        className="bg-white !text-black font-bold hover:bg-slate-100 shadow-xl"
+                        onClick={() => navigate(`/resources/${res.id}`, { state: { resource: res } })}
+                      >
                         View Details
                       </Button>
                     </div>
@@ -163,8 +195,17 @@ const ResourcesPage = () => {
                     <div className="flex justify-between items-start mb-3">
                       <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">{res.category}</span>
                       <div className="flex flex-col items-end text-slate-500 text-xs font-medium">
-                        <span className="text-emerald-600 font-bold mb-1">Avail: {res.availableSpaces} seats</span>
-                        <span className="flex items-center"><Users className="h-3 w-3 mr-1" /> Cap: {res.capacity}</span>
+                        {["Equipment", "Electronics", "Audio/Visual", "Furniture"].includes(res.category) ? (
+                          <>
+                            <span className="text-emerald-600 font-bold mb-1">Available: {res.availableSpaces}</span>
+                            <span className="flex items-center text-[10px] opacity-70">Total Qty: {res.capacity}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-emerald-600 font-bold mb-1">Avail: {res.availableSpaces} seats</span>
+                            <span className="flex items-center"><Users className="h-3 w-3 mr-1" /> Cap: {res.capacity}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2 truncate group-hover:text-blue-600 transition-colors">
@@ -172,7 +213,7 @@ const ResourcesPage = () => {
                     </h3>
                     <div className="flex items-center text-slate-500 text-sm mb-4">
                       <MapPin className="h-4 w-4 mr-1.5 text-slate-400" />
-                      {res.location}
+                      {renderLocation(res.location)}
                     </div>
                     
                     <div className="pt-4 border-t border-slate-100 flex items-center justify-end">

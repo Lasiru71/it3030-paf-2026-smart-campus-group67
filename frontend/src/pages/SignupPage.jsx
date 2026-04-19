@@ -1,16 +1,18 @@
-// SignupPage — registration form with validation, roles, and API integration
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, ArrowLeft } from "lucide-react";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import Logo from "../components/common/Logo";
-import { signup } from "../services/authService";
+import { GoogleLogin } from "@react-oauth/google";
+import { signup, googleLogin } from "../services/authService";
+import { useAuth } from "../context/AuthContext";
 import { ROUTES } from "../utils/constants";
 
 const SignupPage = () => {
   const navigate = useNavigate();
-
+  const { loginUser } = useAuth();
+  
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -28,9 +30,12 @@ const SignupPage = () => {
     const errs = {};
     if (!form.fullName.trim()) errs.fullName = "Full name is required.";
     if (!form.email) errs.email = "Email is required.";
-    else if (!/^[^\s@]+@gmail\.com$/.test(form.email)) errs.email = "Only @gmail.com emails are allowed.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Enter a valid email.";
+    
+    // Password validation: Min 6 characters, uppercase, lowercase, and numeric
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
     if (!form.password) errs.password = "Password is required.";
-    else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(form.password)) {
+    else if (!passwordRegex.test(form.password)) {
       errs.password = "Password must be at least 6 characters, and include uppercase, lowercase, and a number.";
     }
     if (form.password !== form.confirmPassword) errs.confirmPassword = "Passwords do not match.";
@@ -210,10 +215,43 @@ const SignupPage = () => {
                 </div>
               </div>
 
-              <div className="pt-4">
+              <div className="pt-4 space-y-4">
                 <Button type="submit" fullWidth loading={loading} className="py-4 rounded-2xl shadow-xl shadow-blue-500/20 bg-blue-700 hover:bg-blue-800 text-lg font-bold transition-all active:scale-[0.98]">
                   Get Started
                 </Button>
+
+                <div className="relative flex items-center justify-center py-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-slate-200"></div>
+                  </div>
+                  <span className="relative px-4 bg-white text-xs font-bold text-slate-400 uppercase tracking-widest">Or continue with</span>
+                </div>
+
+                <div className="flex justify-center transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  <div className="w-full overflow-hidden rounded-xl border border-slate-200 shadow-sm hover:shadow-md">
+                    <GoogleLogin
+                      useOneTap
+                      theme="outline"
+                      size="large"
+                      width="100%"
+                      onSuccess={async (credentialResponse) => {
+                        setLoading(true);
+                        try {
+                          const { data } = await googleLogin({ idToken: credentialResponse.credential });
+                          loginUser(data);
+                          navigate(ROUTES.HOME);
+                        } catch {
+                          setServerError("Google registration failed. Please try again.");
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      onError={() => {
+                        setServerError("Google signup encountered an error.");
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </form>
 

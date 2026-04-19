@@ -12,3 +12,9 @@ export const signup = (data) => axiosInstance.post("/api/auth/signup", data);
  * @param {{ email: string, password: string }} data
  */
 export const login = (data) => axiosInstance.post("/api/auth/login", data);
+
+/**
+ * Login with Google ID Token
+ * @param {{ idToken: string }} data
+ */
+export const googleLogin = (data) => axiosInstance.post("/api/auth/google", data);

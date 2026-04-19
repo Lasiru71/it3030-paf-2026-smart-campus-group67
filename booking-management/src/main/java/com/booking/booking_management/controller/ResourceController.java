@@ -47,6 +47,9 @@ public class ResourceController {
             if (updates.containsKey("location")) res.setLocation((String) updates.get("location"));
             if (updates.containsKey("status")) res.setStatus((String) updates.get("status"));
             if (updates.containsKey("image")) res.setImage((String) updates.get("image"));
+            if (updates.containsKey("description")) res.setDescription((String) updates.get("description"));
+            if (updates.containsKey("amenities")) res.setAmenities((List<String>) updates.get("amenities"));
+            if (updates.containsKey("rules")) res.setRules((List<String>) updates.get("rules"));
             
             if (updates.containsKey("capacity")) {
                 Object cap = updates.get("capacity");

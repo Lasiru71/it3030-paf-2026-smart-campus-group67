@@ -6,16 +6,18 @@ import autoTable from "jspdf-autotable";
 import {
   Users, BookOpen, BarChart3, Settings, Shield,
   Trash2, Edit, LogOut, Bell, Search, TrendingUp, Filter,
-  Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
+  Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3, User, MapPin, Calendar,
   Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
   FileText, LayoutGrid, Plus, Minus, MessageSquare, CalendarDays, AlertCircle, Wrench,
-  Send, MessageCircle, User, Pencil
+  Send, MessageCircle, User, Pencil, ChevronDown
 } from "lucide-react";
-import { ROUTES } from "../utils/constants";
+import { ROUTES, BASE_URL } from "../utils/constants";
 import { bookingService } from "../services/bookingService";
 import { resourceService } from "../services/resourceService";
 import axiosInstance from "../services/axiosInstance";
 import FacilitiesManagement from "../components/FacilitiesManagement";
+import NotificationBell from "../components/layout/NotificationBell";
+import { getNotificationStats } from "../services/notificationService";
 
 const stats = [
   {
@@ -63,7 +65,7 @@ const navSections = [
   { header: "DIRECTORY", items: [{ icon: Users, label: "Users" }] },
   {
     header: "ACADEMIC", items: [
-      { icon: LayoutGrid, label: "Facilities" },
+      { icon: LayoutGrid, label: "Facilities & Resources" },
       { icon: BookOpen, label: "Bookings" },
       { icon: MessageSquare, label: "Message Box" },
       { icon: Database, label: "Space Management" },
@@ -540,52 +542,61 @@ function BookingsPanel({ onGenerateReport }) {
                 </button>
               </div>
 
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-black tracking-widest text-slate-400">
-                      <th className="px-6 py-4">Resource</th>
-                      <th className="px-6 py-4">Requested By</th>
-                      <th className="px-6 py-4">Time</th>
-                      <th className="px-6 py-4">Duration</th>
-                      <th className="px-6 py-4">Status</th>
-                      <th className="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {groupedBookings[date].map(booking => (
-                      <tr key={booking.id} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-sm text-slate-800">{booking.resourceName}</p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{booking.members} members</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-semibold text-slate-700">{booking.userEmail}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <p className="text-sm font-bold text-slate-700">{booking.bookingTime}</p>
-                        </td>
-                        <td className="px-6 py-4 text-sm font-semibold text-slate-600">
-                          {booking.durationHours}h {booking.durationMinutes > 0 ? `${booking.durationMinutes}m` : ""}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusColor(booking.status)}`}>
+              <div className="space-y-4">
+                {groupedBookings[date].map(booking => (
+                  <div key={booking.id} className="group bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="flex items-center justify-between gap-6">
+                      {/* Resource Info */}
+                      <div className="flex items-center gap-4 min-w-[200px]">
+                        <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <BookOpen className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-900 leading-tight">{booking.resourceName}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 flex items-center gap-1">
+                            <Users className="h-3 w-3" /> {booking.members} members
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Requester & Schedule */}
+                      <div className="flex-1 flex items-center gap-8">
+                        <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Requested By</p>
+                          <p className="text-sm font-bold text-slate-700">{booking.userEmail}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 leading-none">Schedule</p>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 text-blue-500" />
+                            <p className="text-sm font-black text-slate-800">{booking.bookingTime}</p>
+                            <span className="h-1 w-1 rounded-full bg-slate-300 mx-1" />
+                            <p className="text-xs font-bold text-slate-500">
+                               {booking.durationHours}h {booking.durationMinutes > 0 ? `${booking.durationMinutes}m` : ""}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="flex items-center gap-6">
+                         <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border shadow-sm ${getStatusColor(booking.status)}`}>
                             {booking.status || "PENDING"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end items-center gap-2">
+                         </div>
+
+                         {/* Actions */}
+                         <div className="flex items-center gap-2 border-l border-slate-100 pl-6">
                             {(booking.status === "PENDING" || !booking.status) && (
                               <>
                                 <button
                                   onClick={() => handleStatusChange(booking.id, "APPROVED")}
-                                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-sm transition-all shadow-emerald-200"
+                                  className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100 transition-all active:scale-95"
                                 >
                                   Approve
                                 </button>
                                 <button
                                   onClick={() => handleStatusChange(booking.id, "REJECTED")}
-                                  className="px-4 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-[10px] font-black uppercase tracking-wider rounded-xl transition-all"
+                                  className="px-5 py-2 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95"
                                 >
                                   Reject
                                 </button>
@@ -593,17 +604,16 @@ function BookingsPanel({ onGenerateReport }) {
                             )}
                             <button
                               onClick={() => handleDelete(booking.id)}
-                              className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                              className="p-2.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
                               title="Delete Booking"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
@@ -702,10 +712,6 @@ function SpaceManagementPanel() {
   const [updatingId, setUpdatingId] = useState(null);
   const [editValue, setEditValue] = useState("");
 
-  useEffect(() => {
-    fetchResources();
-  }, []);
-
   const fetchResources = () => {
     setLoading(true);
     resourceService.getAllResources()
@@ -720,6 +726,13 @@ function SpaceManagementPanel() {
         setLoading(false);
       });
   };
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchResources();
+    };
+    load();
+  }, []);
 
   const handleStatusChange = (id, newStatus) => {
     resourceService.updateResourceStatus(id, newStatus)
@@ -986,15 +999,20 @@ function IndividualBookingsPanel() {
     return resourceName.replace("Individual Session - ", "").split(", ");
   };
 
-  const handleToggle = (bookingId, building, type, value) => {
+  const handleToggle = (bookingId, building, type, value, isSingle = false) => {
     setSelectedMapping(prev => {
       const bookingData = prev[bookingId] || {};
       const buildingData = bookingData[building] || { floors: [], facilities: [] };
       const currentList = buildingData[type] || [];
       
-      const updatedList = currentList.includes(value)
-        ? currentList.filter(v => v !== value)
-        : [...currentList, value];
+      let updatedList;
+      if (isSingle) {
+        updatedList = value ? [value] : [];
+      } else {
+        updatedList = currentList.includes(value)
+          ? currentList.filter(v => v !== value)
+          : [...currentList, value];
+      }
       
       return {
         ...prev,
@@ -1101,12 +1119,6 @@ function IndividualBookingsPanel() {
     doc.save(`Individual_Bookings_Report_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
-  const getStatusColor = (status) => {
-    if (status === "APPROVED") return "bg-emerald-100 text-emerald-700 border-emerald-200";
-    if (status === "REJECTED") return "bg-red-100 text-red-700 border-red-200";
-    return "bg-amber-100 text-amber-700 border-amber-200";
-  };
-
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50 p-8">
       <div className="flex items-center justify-between mb-8">
@@ -1123,54 +1135,61 @@ function IndividualBookingsPanel() {
       </div>
 
       {loading ? (
-        <div className="bg-white rounded-3xl border border-slate-200 p-20 text-center text-slate-500 font-medium">
+        <div className="bg-white rounded-3xl border border-slate-200 p-20 text-center text-slate-500 font-medium font-black uppercase text-[10px] tracking-widest">
           Loading individual requests...
         </div>
       ) : bookings.length === 0 ? (
         <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-20 text-center shadow-sm">
           <Smartphone className="h-12 w-12 text-slate-300 mx-auto mb-4" />
           <p className="text-lg font-bold text-slate-500">No Individual Requests</p>
+          <p className="text-sm text-slate-400 mt-1">Direct student requests will appear here for configuration.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-black tracking-widest text-slate-400">
-                <th className="px-6 py-4">Requester</th>
-                <th className="px-6 py-4">Requested Support</th>
-                <th className="px-6 py-4">Details</th>
-                <th className="px-6 py-4">Target Location Selection</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+        <div className="space-y-6">
               {bookings.map(booking => {
                 const requestedFacilities = getFacilities(booking.resourceName);
                 const bookingMapping = selectedMapping[booking.id] || {};
                 
                 return (
-                  <tr key={booking.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <p className="text-sm font-bold text-slate-800">{booking.userEmail}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{booking.members} members</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {requestedFacilities.map((tag, idx) => (
-                          <span key={idx} className="bg-blue-50 text-blue-600 text-[9px] font-black uppercase px-2 py-0.5 rounded border border-blue-100">
-                            {tag}
-                          </span>
-                        ))}
+                  <div key={booking.id} className="group bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-hidden relative">
+                    <div className="flex flex-col lg:flex-row gap-8">
+                      {/* Left: Requester & Info */}
+                      <div className="lg:w-1/4 space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600">
+                            <User className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-slate-900 leading-tight">{booking.userEmail}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{booking.members} Team Members</p>
+                          </div>
+                        </div>
+                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100/50 italic font-medium text-slate-600 text-[11px] leading-relaxed">
+                          "{booking.message || "No special instructions provided."}"
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5">
+                          {requestedFacilities.map((tag, idx) => (
+                            <span key={idx} className="bg-blue-50 text-blue-600 text-[9px] font-black uppercase px-2 py-0.5 rounded-lg border border-blue-100">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-4 text-slate-400 pt-2 border-t border-slate-100">
+                           <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3 w-3" />
+                              <span className="text-[10px] font-bold">{booking.bookingDate}</span>
+                           </div>
+                           <div className="flex items-center gap-1.5">
+                              <Clock className="h-3 w-3" />
+                              <span className="text-[10px] font-bold">{booking.bookingTime}</span>
+                           </div>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 max-w-xs">
-                      <p className="text-xs text-slate-600 font-medium line-clamp-2 italic">
-                        {booking.message || "No special requests"}
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-400 mt-1">{booking.bookingDate} @ {booking.bookingTime}</p>
-                    </td>
-                    <td className="px-6 py-4 min-w-[320px]">
+                        {/* Middle: Location Selection */}
+                        <div className="flex-1 bg-slate-50/50 rounded-3xl border border-slate-100 p-5">
+
                       {booking.status === "APPROVED" ? (
                         <div className="space-y-2">
                           {booking.studentSelection ? (
@@ -1208,23 +1227,22 @@ function IndividualBookingsPanel() {
                               
                               <div className="space-y-2">
                                 <div>
-                                  <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Floors</p>
-                                  <div className="flex flex-wrap gap-1">
-                                    {floors.map(floor => {
-                                      const isSelected = (bookingMapping[building]?.floors || []).includes(floor);
-                                      return (
-                                        <button
-                                          key={floor}
-                                          onClick={() => handleToggle(booking.id, building, "floors", floor)}
-                                          className={`px-2 py-0.5 text-[8px] font-bold rounded border transition-all ${
-                                            isSelected ? "bg-blue-600 border-blue-600 text-white shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:text-blue-600"
-                                          }`}
-                                        >
-                                          {floor}
-                                        </button>
-                                      );
-                                    })}
+                                <div>
+                                  <p className="text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">Level / Floor <span className="text-red-500">*</span></p>
+                                  <div className="relative">
+                                    <select 
+                                      value={bookingMapping[building]?.floors?.[0] || ""}
+                                      onChange={(e) => handleToggle(booking.id, building, "floors", e.target.value, true)}
+                                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-bold text-slate-700 outline-none appearance-none cursor-pointer focus:ring-2 focus:ring-blue-500/10"
+                                    >
+                                      <option value="">Select Level</option>
+                                      {floors.map(f => (
+                                        <option key={f} value={f}>{f}</option>
+                                      ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 bottom-3 h-3 w-3 text-slate-400 pointer-events-none" />
                                   </div>
+                                </div>
                                 </div>
                                 
                                 <div>
@@ -1267,44 +1285,64 @@ function IndividualBookingsPanel() {
                           </div>
                         </div>
                       )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusColor(booking.status)}`}>
-                        {booking.status || "PENDING"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end items-center gap-2">
-                         {(booking.status === "PENDING" || !booking.status) && (
-                          <>
-                            <button
-                              onClick={() => handleStatusChange(booking.id, "APPROVED")}
-                              className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm transition-all"
-                            >
-                              Submit
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(booking.id, "REJECTED")}
-                              className="px-3 py-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={() => handleDelete(booking.id)}
-                          className="p-1.5 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        </div>
+
+                        {/* Right: Decision Controls */}
+                        <div className="lg:w-1/4 flex flex-col justify-between">
+                           <div className="space-y-4">
+                             {(booking.status === "PENDING" || !booking.status) ? (
+                                <div className="space-y-3">
+                                   <div>
+                                      <div className="flex items-center gap-2 mb-1.5 ml-1">
+                                         <Edit3 className="h-3 w-3 text-slate-400" />
+                                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Instruction to student</p>
+                                      </div>
+                                      <textarea
+                                        value={adminNotes[booking.id] || ""}
+                                        onChange={(e) => setAdminNotes(prev => ({ ...prev, [booking.id]: e.target.value }))}
+                                        placeholder="Add notes for student..."
+                                        className="w-full bg-slate-100/50 border border-slate-200 rounded-2xl p-3 text-[11px] text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 transition-all min-h-[90px] resize-none"
+                                      />
+                                   </div>
+                                   <div className="grid grid-cols-2 gap-2">
+                                      <button
+                                        onClick={() => handleStatusChange(booking.id, "APPROVED")}
+                                        className="py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95"
+                                      >
+                                        Approve
+                                      </button>
+                                      <button
+                                        onClick={() => handleStatusChange(booking.id, "REJECTED")}
+                                        className="py-2.5 bg-white text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+                                      >
+                                        Reject
+                                      </button>
+                                   </div>
+                                </div>
+                             ) : (
+                                <div className="text-center p-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                   <CheckCircle className="h-8 w-8 text-slate-200 mx-auto mb-2" />
+                                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Configuration Complete</p>
+                                </div>
+                             )}
+                           </div>
+                           
+                           <div className="flex justify-end pt-4 border-t border-slate-100 mt-6 lg:mt-0">
+                              <button
+                                onClick={() => handleDelete(booking.id)}
+                                className="flex items-center gap-2 px-4 py-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all group"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="text-[9px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Discard</span>
+                              </button>
+                           </div>
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    </div>
+                  );
+                })}
+              </div>
+
       )}
     </main>
   );
@@ -1327,11 +1365,6 @@ function TicketsPanel() {
   const [editText, setEditText] = useState("");
   const { auth } = useAuth();
 
-  useEffect(() => {
-    fetchTickets();
-    fetchTechnicians();
-  }, []);
-
   const fetchTickets = async () => {
     try {
       const res = await axiosInstance.get("/api/incidents");
@@ -1351,6 +1384,14 @@ function TicketsPanel() {
       console.error("Failed to fetch technicians", err);
     }
   };
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchTickets();
+      await fetchTechnicians();
+    };
+    load();
+  }, []);
 
   const handleAssign = async () => {
     if (!selectedTech) return;
@@ -1596,7 +1637,8 @@ function TicketsPanel() {
                       {selectedTicket.imageUrls.map((url, i) => (
                         <div key={i} className="group relative">
                           <img 
-                            src={`${axiosInstance.defaults.baseURL}${url}`} 
+                            src={`${BASE_URL}${url}`} 
+
                             alt="Evidence" 
                             className="h-32 w-32 object-cover rounded-[1.5rem] border border-slate-200 shadow-lg transition-all group-hover:scale-105 group-hover:ring-8 group-hover:ring-blue-50 cursor-zoom-in" 
                           />
@@ -1831,11 +1873,17 @@ export default function AdminDashboardPage() {
   const standardCount = users.filter((u) => u.role === "USER" || u.role === "STUDENT").length;
   const totalUsers = users.length || 1;
 
+  const [bookingsStats, setBookingsStats] = useState([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+
   useEffect(() => {
-    axiosInstance.get("/api/users")
-      .then(res => {
-        if (res.data && res.data.length > 0) {
-          const mapped = res.data.map(u => ({
+    const fetchData = async () => {
+      try {
+        setLoadingStats(true);
+        // Fetch Users
+        const usersRes = await axiosInstance.get("/api/users");
+        if (usersRes.data && usersRes.data.length > 0) {
+          const mapped = usersRes.data.map(u => ({
             id: u.id,
             name: u.fullName || u.email.split("@")[0],
             email: u.email,
@@ -1845,8 +1893,19 @@ export default function AdminDashboardPage() {
           }));
           setUsers(mapped);
         }
-      })
-      .catch(err => console.warn("Using mock users. Backend fetch failed:", err.message));
+
+        // Fetch All Bookings for Stats
+        const bRes = await bookingService.getAllBookings();
+        setBookingsStats(bRes || []);
+
+      } catch (err) {
+        console.warn("Backend fetch failed:", err.message);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const generateUserTablePDF = () => {
@@ -1910,7 +1969,7 @@ export default function AdminDashboardPage() {
 
     doc.save("CampusReserve_User_Report.pdf");
 
-    setToast("Report downloaded successfully! ðŸ“Š");
+    setToast("Report downloaded successfully! 📊");
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -1958,69 +2017,157 @@ export default function AdminDashboardPage() {
   };
 
   const generateBookingPDF = async (customData = null) => {
+<<<<<<< HEAD
     setToast("Preparing your report... â³");
     // If we have custom data (from BookingsPanel), use it. Otherwise, fetch fresh data.
     let bookingsToReport = customData;
+=======
+    setToast("Preparing your report... ⏳");
+    try {
+      // If called as an event handler, customData will be the event object.
+      // We only want to use it if it's explicitly an array of bookings.
+      let bookingsToReport = Array.isArray(customData) ? customData : null;
+>>>>>>> origin/main
 
-    if (!bookingsToReport) {
-      try {
+      if (!bookingsToReport) {
         const response = await bookingService.getAllBookings();
         bookingsToReport = response;
-      } catch (err) {
-        console.error("Report fetch failed", err);
-        setToast("Error: Could not fetch bookings for report.");
-        setTimeout(() => setToast(null), 3000);
-        return;
       }
+
+      // Safeguard: Ensure we have an array
+      if (!Array.isArray(bookingsToReport)) {
+        console.error("Data is not an array:", bookingsToReport);
+        throw new Error("Invalid data format received from server.");
+      }
+
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFillColor(37, 99, 235);
+      doc.rect(0, 0, 210, 40, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("CampusReserve Booking Report", 105, 20, { align: "center" });
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 30, { align: "center" });
+
+      // Overview Section
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Booking Overview", 14, 55);
+
+      // Defensive filtering in case any booking object is null
+      const validBookings = bookingsToReport.filter(b => b !== null && typeof b === 'object');
+      const pendingCount = validBookings.filter(b => b.status === "PENDING" || !b.status).length;
+      const approvedCount = validBookings.filter(b => b.status === "APPROVED").length;
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Total Records in Report: ${validBookings.length}`, 14, 65);
+      doc.text(`Pending Approvals: ${pendingCount}`, 14, 72);
+      doc.text(`Approved Bookings: ${approvedCount}`, 14, 79);
+
+      // Table mapping with null-safety
+      const tableBody = validBookings.map((b, i) => [
+        (i + 1).toString(),
+        b.resourceName || "N/A",
+        b.userEmail || "N/A",
+        b.bookingDate || "N/A",
+        b.bookingTime || "N/A",
+        b.status || "PENDING"
+      ]);
+
+      autoTable(doc, {
+        startY: 95,
+        head: [["#", "Facility", "Booked By", "Date", "Time", "Status"]],
+        body: tableBody.length > 0 ? tableBody : [["-", "No records found", "-", "-", "-", "-"]],
+        theme: "grid",
+        headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        styles: { fontSize: 9 }
+      });
+
+      doc.save(`CampusReserve_Booking_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+      setToast("Booking report downloaded! 📊");
+    } catch (err) {
+      console.error("Report generation failed:", err);
+      setToast(`Error: ${err.message || "Failed to generate booking report."}`);
+    }
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const generateNotificationPDF = async () => {
+    setToast("Analyzing notification data... ⏳");
+    try {
+      const { data } = await getNotificationStats();
+      const doc = new jsPDF();
+
+      // Header
+      doc.setFillColor(59, 130, 246);
+      doc.rect(0, 0, 210, 40, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("Notification Activity Report", 105, 20, { align: "center" });
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 30, { align: "center" });
+
+      // Summary Section
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Global Notification Statistics", 14, 55);
+
+      const total = data.total || 0;
+      const read = data.read || 0;
+      const unread = data.unread || 0;
+      const engagement = total > 0 ? ((read / total) * 100).toFixed(1) : "0";
+
+      // Stats Table
+      autoTable(doc, {
+        startY: 65,
+        head: [["Metric", "Value", "Description"]],
+        body: [
+          ["Total Sent", total.toString(), "Gross system alerts"],
+          ["Unread Alerts", unread.toString(), "Pending user attention"],
+          ["Read Alerts", read.toString(), "Acknowledged notifications"],
+          ["Engagement Rate", `${engagement}%`, "Read vs Total ratio"]
+        ],
+        theme: "striped",
+        headStyles: { fillColor: [51, 65, 85] }
+      });
+
+      // Type Breakdown
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Category Breakdown", 14, doc.lastAutoTable.finalY + 15);
+
+      autoTable(doc, {
+        startY: doc.lastAutoTable.finalY + 20,
+        head: [["Category", "Count", "Percentage"]],
+        body: [
+          ["Bookings", data.bookingCount?.toString() || "0", total > 0 ? `${((data.bookingCount / total) * 100).toFixed(1)}%` : "0%"],
+          ["Maintenance Tickets", data.ticketCount?.toString() || "0", total > 0 ? `${((data.ticketCount / total) * 100).toFixed(1)}%` : "0%"]
+        ],
+        theme: "grid",
+        headStyles: { fillColor: [59, 130, 246] }
+      });
+
+      doc.setFontSize(10);
+      doc.setTextColor(148, 163, 184);
+      doc.text("End of Notification Activity Report", 105, 280, { align: "center" });
+
+      doc.save("Notification_Activity_Report.pdf");
+      setToast("Notification report generated! 🔔");
+    } catch (err) {
+      console.error("Stats failure", err);
+      setToast("Error: Failed to gather statistics.");
     }
 
-    const doc = new jsPDF();
-
-    // Header
-    doc.setFillColor(37, 99, 235);
-    doc.rect(0, 0, 210, 40, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("CampusReserve Booking Report", 105, 20, { align: "center" });
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 30, { align: "center" });
-
-    // Overview Section
-    doc.setTextColor(30, 41, 59);
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Booking Overview", 14, 55);
-
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Total Records in Report: ${bookingsToReport.length}`, 14, 65);
-    doc.text(`Pending Approvals: ${bookingsToReport.filter(b => b.status === "PENDING" || !b.status).length}`, 14, 72);
-    doc.text(`Approved Bookings: ${bookingsToReport.filter(b => b.status === "APPROVED").length}`, 14, 79);
-
-    // Table
-    const tableBody = bookingsToReport.map((b, i) => [
-      (i + 1).toString(),
-      b.resourceName || "N/A",
-      b.userEmail || "N/A",
-      b.bookingDate || "N/A",
-      b.bookingTime || "N/A",
-      b.status || "PENDING"
-    ]);
-
-    autoTable(doc, {
-      startY: 95,
-      head: [["#", "Facility", "Booked By", "Date", "Time", "Status"]],
-      body: tableBody.length > 0 ? tableBody : [["-", "No records found", "-", "-", "-", "-"]],
-      theme: "grid",
-      headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: "bold" },
-      alternateRowStyles: { fillColor: [248, 250, 252] },
-      styles: { fontSize: 9 }
-    });
-
-    doc.save(`CampusReserve_Booking_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-    setToast("Booking report downloaded! ðŸ“Š");
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -2170,10 +2317,7 @@ export default function AdminDashboardPage() {
                 className="pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 transition"
               />
             </div>
-            <button className="relative p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors text-slate-500">
-              <Bell className="h-4 w-4" />
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
-            </button>
+            <NotificationBell />
           </div>
         </header>
 
@@ -2187,37 +2331,51 @@ export default function AdminDashboardPage() {
 
         {activeNav === "Facilities & Resources" && <FacilitiesManagement />}
 
-        {activeNav === "Bookings" && (
-          <main className="flex-1 overflow-y-auto bg-slate-50 p-8 space-y-6">
-            <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden p-8 text-center">
-              <div className="h-16 w-16 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="h-8 w-8 text-violet-600" />
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 mb-2">Booking Management</h2>
-              <p className="text-slate-500 max-w-md mx-auto">
-                Comprehensive booking oversight. Monitor reservations, handle cancellations, and view schedule distributions across all campus resources.
-              </p>
-              <div className="mt-8 flex justify-center gap-4">
-                <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Active Bookings</p>
-                  <p className="text-xl font-black text-slate-800">347</p>
-                </div>
-                <div className="bg-slate-50 px-6 py-4 rounded-2xl border border-slate-100">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Pending</p>
-                  <p className="text-xl font-black text-slate-800">14 Actions</p>
-                </div>
-              </div>
-            </div>
-          </main>
-        )}
 
-        {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports" || activeNav === "Bookings") && (
+        {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports") && (
           <main className={`flex-1 overflow-y-auto px-8 py-7 bg-slate-50 ${(activeNav === "Overview" || activeNav === "Analytics" || activeNav === "Reports") ? "space-y-7" : ""} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
 
             {/* â”€ Colorful Stats â”€ */}
             {activeNav === "Overview" && (
               <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
-                {stats.map((s) => (
+                {[
+                  {
+                    label: "Total Users", 
+                    value: users.length.toLocaleString(), 
+                    change: `+${users.filter(u => u.joined === "Recently").length} recently`, 
+                    trend: "Verified",
+                    icon: Users,
+                    gradient: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                    glow: "0 8px 30px rgba(59,130,246,0.35)",
+                  },
+                  {
+                    label: "Active Bookings", 
+                    value: bookingsStats.filter(b => b.status !== "REJECTED").length.toLocaleString(), 
+                    change: `${bookingsStats.filter(b => b.status === "APPROVED").length} Approved`, 
+                    trend: "Live",
+                    icon: BookOpen,
+                    gradient: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                    glow: "0 8px 30px rgba(16,185,129,0.35)",
+                  },
+                  {
+                    label: "System Health", 
+                    value: "99.8%", 
+                    change: "Optimal", 
+                    trend: "Stable",
+                    icon: Activity,
+                    gradient: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
+                    glow: "0 8px 30px rgba(139,92,246,0.35)",
+                  },
+                  {
+                    label: "Pending Reviews", 
+                    value: bookingsStats.filter(b => b.status === "PENDING" || !b.status).length.toLocaleString(), 
+                    change: "Needs attention", 
+                    trend: "Priority",
+                    icon: Settings,
+                    gradient: "linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)",
+                    glow: "0 8px 30px rgba(245,158,11,0.35)",
+                  },
+                ].map((s) => (
                   <div
                     key={s.label}
                     className="relative rounded-2xl p-5 overflow-hidden hover:scale-[1.02] transition-transform duration-200 cursor-default"
@@ -2237,9 +2395,9 @@ export default function AdminDashboardPage() {
                           {s.trend}
                         </span>
                       </div>
-                      <p className="text-3xl font-black text-white tracking-tight leading-none mb-1">{s.value}</p>
+                      <p className="text-3xl font-black text-white tracking-tight leading-none mb-1">{loadingStats ? "..." : s.value}</p>
                       <p className="text-sm font-bold text-white/80">{s.label}</p>
-                      <p className="text-xs text-white/55 mt-1">{s.change}</p>
+                      <p className="text-xs text-white/55 mt-1">{loadingStats ? "Calculating..." : s.change}</p>
                     </div>
                   </div>
                 ))}
@@ -2494,6 +2652,26 @@ export default function AdminDashboardPage() {
                         <Download className="h-4 w-4" /> Generate Report
                       </button>
                     </div>
+
+                    {/* Notification Report */}
+                    <div className="group bg-white rounded-3xl border border-slate-100 shadow-sm p-7 flex flex-col justify-between hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300">
+                      <div>
+                        <div className="h-12 w-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                          <Bell className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-lg font-bold text-slate-800">Alert Activity</h4>
+                          <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-wider">System</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-8 leading-relaxed">Analysis of system alerts, user engagement rates, and category distribution across the platform notification engine.</p>
+                      </div>
+                      <button
+                        onClick={generateNotificationPDF}
+                        className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-900 active:scale-95 transition-all shadow-md group-hover:shadow-lg"
+                      >
+                        <Download className="h-4 w-4" /> Generate Report
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2553,7 +2731,7 @@ export default function AdminDashboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filtered.map((user, i) => (
+                      {filtered.map((user) => (
                         <tr
                           key={user.id}
                           className="hover:bg-slate-50/50 transition-colors"
@@ -2623,7 +2801,7 @@ export default function AdminDashboardPage() {
             onClose={() => setIsAddModalOpen(false)}
             onAdd={(data) => {
               axiosInstance.post("/api/auth/signup", data)
-                .then(res => {
+                .then(() => {
                   // After signup, we might need to fetch the full list again to get the ID, 
                   // or the backend might return the user in the data field of ApiResponse.
                   setToast("User created successfully in database.");

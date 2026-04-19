@@ -4,6 +4,7 @@ import com.booking.booking_management.model.Booking;
 import com.booking.booking_management.model.Resource;
 import com.booking.booking_management.repository.BookingRepository;
 import com.booking.booking_management.repository.ResourceRepository;
+import com.booking.booking_management.model.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -19,6 +20,12 @@ public class BookingService {
 
     @Autowired
     private ResourceRepository resourceRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
+    private com.booking.booking_management.repository.UserRepository userRepository;
 
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
@@ -97,7 +104,32 @@ public class BookingService {
             booking.setSeatsDeducted(false);
         }
 
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        
+        // Trigger notification for user
+        notificationService.createNotification(
+                savedBooking.getUserEmail(),
+                "Booking Submitted",
+                "Your booking for " + savedBooking.getResourceName() + " has been successfully submitted and is pending approval.",
+                "BOOKING"
+        );
+
+        // Trigger notification for admins
+        try {
+            List<com.booking.booking_management.model.User> admins = userRepository.findByRole(com.booking.booking_management.enums.Role.ADMIN);
+            for (com.booking.booking_management.model.User admin : admins) {
+                notificationService.createNotification(
+                        admin.getEmail(),
+                        "New Booking Request",
+                        "A new booking for " + savedBooking.getResourceName() + " has been submitted by " + savedBooking.getUserEmail() + ".",
+                        "BOOKING"
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to notify admins: " + e.getMessage());
+        }
+
+        return savedBooking;
     }
 
     public Booking updateBookingStatus(@NonNull String id, String status, String locationSuggestions, String adminNote) {
@@ -128,7 +160,23 @@ public class BookingService {
                 }
             }
             
-            return bookingRepository.save(booking);
+            Booking savedBooking = bookingRepository.save(booking);
+            
+            // Trigger notification for status change
+            String title = "Booking " + status;
+            String messageDetail = "Your booking for " + savedBooking.getResourceName() + " has been " + status.toLowerCase();
+            if (adminNote != null && !adminNote.isEmpty()) {
+                messageDetail += ". Admin Note: " + adminNote;
+            }
+            
+            notificationService.createNotification(
+                    savedBooking.getUserEmail(),
+                    title,
+                    messageDetail,
+                    "BOOKING"
+            );
+
+            return savedBooking;
         }).orElseThrow(() -> new RuntimeException("Booking not found"));
     }
 

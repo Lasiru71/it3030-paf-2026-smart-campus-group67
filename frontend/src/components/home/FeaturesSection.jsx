@@ -37,15 +37,18 @@ const FeaturesSection = () => {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {features.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="text-center">
-              <div className="mx-auto h-14 w-14 rounded-2xl bg-blue-700 flex items-center justify-center text-white mb-4 shadow-md">
-                <Icon className="h-7 w-7" />
+          {features.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <div key={feature.title} className="text-center">
+                <div className="mx-auto h-14 w-14 rounded-2xl bg-blue-700 flex items-center justify-center text-white mb-4 shadow-md">
+                  <Icon className="h-7 w-7" />
+                </div>
+                <h3 className="font-semibold text-slate-800 text-lg mb-2">{feature.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{feature.desc}</p>
               </div>
-              <h3 className="font-semibold text-slate-800 text-lg mb-2">{title}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

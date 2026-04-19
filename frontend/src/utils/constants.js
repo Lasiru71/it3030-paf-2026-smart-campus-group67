@@ -2,7 +2,7 @@
 
 export const APP_NAME = "CampusReserve";
 
-export const BASE_URL = "http://localhost:8080";
+export const BASE_URL = "http://localhost:8081";
 
 export const AUTH_STORAGE_KEY = "campus_reserve_auth";
 
@@ -11,6 +11,7 @@ export const ROUTES = {
   LOGIN: "/login",
   SIGNUP: "/signup",
   RESOURCES: "/resources",
+  RESOURCE_DETAIL: "/resources/:resourceId",
   BOOKING: "/booking/:resourceId",
   MY_BOOKINGS: "/my-bookings",
   INDIVIDUAL_BOOKINGS: "/individual-bookings",

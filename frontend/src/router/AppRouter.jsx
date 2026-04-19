@@ -22,6 +22,7 @@ import UnauthorizedPage from "../pages/UnauthorizedPage";
 import BookingPage from "../pages/BookingPage";
 import IndividualBookingPage from "../pages/IndividualBookingPage";
 import MyIndividualHistoryPage from "../pages/MyIndividualHistoryPage";
+import FacilityDetailPage from "../pages/FacilityDetailPage";
 
 const AppRouter = () => {
   return (
@@ -39,6 +40,10 @@ const AppRouter = () => {
         <Route
           path={ROUTES.RESOURCES}
           element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>}
+        />
+        <Route
+          path={ROUTES.RESOURCE_DETAIL}
+          element={<ProtectedRoute><FacilityDetailPage /></ProtectedRoute>}
         />
         <Route
           path={ROUTES.BOOKING}

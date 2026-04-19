@@ -104,4 +104,54 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole().name());
     }
+
+    @Override
+    public AuthResponse googleLogin(com.booking.booking_management.dto.request.GoogleLoginRequest request) {
+        try {
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier verifier = 
+                new com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier.Builder(
+                    new com.google.api.client.http.javanet.NetHttpTransport(),
+                    new com.google.api.client.json.gson.GsonFactory()
+                ).build();
+
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken idToken = verifier.verify(request.getIdToken());
+            if (idToken == null) {
+                throw new InvalidCredentialsException("Invalid Google ID Token");
+            }
+
+            com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            String fullName = (String) payload.get("name");
+
+            User user = userRepository.findByEmail(email).orElseGet(() -> {
+                // Register new user automatically
+                User newUser = new User(
+                    fullName,
+                    email,
+                    passwordEncoder.encode(java.util.UUID.randomUUID().toString()), // Random password
+                    Role.USER
+                );
+                return userRepository.save(newUser);
+            });
+
+            // Create user details for JWT generation
+            org.springframework.security.core.userdetails.User userDetails = new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_" + user.getRole().name())));
+
+            String jwtToken = jwtService.generateToken(userDetails);
+
+            return new AuthResponse(
+                jwtToken,
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getRole().name());
+
+        } catch (Exception e) {
+            throw new InvalidCredentialsException("Google authentication failed: " + e.getMessage());
+        }
+    }
 }
