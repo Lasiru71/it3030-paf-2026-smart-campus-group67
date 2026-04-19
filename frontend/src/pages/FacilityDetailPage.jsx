@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { facilityService } from "../services/facilityService";
+import { bookingService } from "../services/bookingService";
 import MainLayout from "../components/layout/MainLayout";
 import { renderLocation } from "../utils/formatters";
 import {
@@ -141,16 +142,8 @@ const getRules = (category) => {
 };
 
 /* ─── Fake time-slot availability (per day) ─── */
-const generateSlots = () => {
-  const slots = [];
-  const starts = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-  starts.forEach((s) => {
-    const endHr = String(parseInt(s.split(":")[0]) + 1).padStart(2, "0");
-    const booked = Math.random() > 0.55;
-    slots.push({ start: s, end: `${endHr}:00`, booked });
-  });
-  return slots;
-};
+// Removed generateSlots in favor of dynamic calculation
+
 
 /* ─── Mapping: labels to icons for dynamic amenities ─── */
 const amenityIconMap = {
@@ -185,22 +178,66 @@ const FacilityDetailPage = () => {
   const locationState = useLocation();
   const [resource, setResource] = useState(locationState.state?.resource || null);
   const [loading, setLoading] = useState(!resource);
-  const [slots] = useState(generateSlots);
+  const [bookings, setBookings] = useState([]);
+  const [slots, setSlots] = useState([]);
   const [activeDay, setActiveDay] = useState(0); // 0 = today
 
   useEffect(() => {
-    if (!resource) {
-      const fetch = async () => {
-        setLoading(true);
-        const data = await facilityService.getById(resourceId);
-        setResource(data);
-        setLoading(false);
-      };
-      fetch();
-    }
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        if (!resource) {
+          const data = await facilityService.getById(resourceId);
+          setResource(data);
+        }
+        const allBookings = await bookingService.getAllBookings();
+        setBookings(allBookings || []);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+      setLoading(false);
+    };
+    fetch();
     window.scrollTo(0, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resourceId]);
+
+  useEffect(() => {
+    if (!resource) return;
+    
+    const computedSlots = [];
+    const starts = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+    
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + activeDay);
+    const pad = (n) => String(n).padStart(2, '0');
+    const targetDateString = `${targetDate.getFullYear()}-${pad(targetDate.getMonth()+1)}-${pad(targetDate.getDate())}`;
+
+    const dateBookings = bookings.filter(b => 
+      b.resourceId === resource.id && 
+      b.bookingDate === targetDateString &&
+      (b.status === "APPROVED" || b.status === "PENDING" || b.status === "CONFIRMED")
+    );
+
+    starts.forEach((s) => {
+      const startHr = parseInt(s.split(":")[0]);
+      const endHrStr = String(startHr + 1).padStart(2, "0");
+      
+      let isBooked = false;
+      dateBookings.forEach(b => {
+        const bStartHr = parseInt(b.bookingTime.split(":")[0]);
+        const duration = b.durationHours || 1; 
+        const bEndHr = bStartHr + duration;
+        
+        if (startHr >= bStartHr && startHr < bEndHr) {
+           isBooked = true; 
+        }
+      });
+
+      computedSlots.push({ start: s, end: `${endHrStr}:00`, booked: isBooked });
+    });
+    setSlots(computedSlots);
+  }, [activeDay, bookings, resource]);
 
   if (loading) {
     return (
@@ -621,8 +658,11 @@ const FacilityDetailPage = () => {
                         <ChevronRight className="h-4 w-4" />
                       </button>
                     ) : (
-                      <div className="w-full py-4 bg-red-50 text-red-600 font-black rounded-2xl text-sm text-center border border-red-100">
-                        Currently Fully Booked
+                      <div className="w-full py-4 bg-red-50 text-red-600 font-black rounded-2xl text-sm text-center border border-red-100 uppercase tracking-widest">
+                        {resource.status === 'Maintenance' ? 'Under Maintenance' : 
+                         resource.status === 'Booked' ? 'Currently Fully Booked' : 
+                         resource.status === 'Out of Service' ? 'Out of Service' : 
+                         'Currently Unavailable'}
                       </div>
                     )}
                   </div>
