@@ -129,8 +129,8 @@ export default function FacilitiesManagement() {
     level: [],
     capacity: "",
     status: "Active",
-    startTime: "08:00 AM",
-    endTime: "06:00 PM",
+    startTime: "08:00",
+    endTime: "18:00",
     image: "",
     isDistributed: false,
     locationBatches: [{ block: "Main Building", level: "Level 1", quantity: "" }],
@@ -177,8 +177,8 @@ export default function FacilitiesManagement() {
       isDistributed: isDist,
       locationBatches: batches,
       status: facility.status === "Available" ? "Active" : (facility.status === "Maintenance" ? "Maintenance" : "Out of Service"),
-      startTime: facility.startTime || "08:00 AM",
-      endTime: facility.endTime || "06:00 PM",
+      startTime: facility.startTime || "08:00",
+      endTime: facility.endTime || "18:00",
       image: facility.image || "",
       description: facility.description || "",
       amenities: facility.amenities || [],
@@ -213,8 +213,8 @@ export default function FacilitiesManagement() {
       isDistributed: isDist,
       locationBatches: batches,
       status: "Active", // Reset status to active for the new copy
-      startTime: facility.startTime || "08:00 AM",
-      endTime: facility.endTime || "06:00 PM",
+      startTime: facility.startTime || "08:00",
+      endTime: facility.endTime || "18:00",
       image: facility.image || "",
       description: facility.description || "",
       amenities: facility.amenities || [],
@@ -232,8 +232,8 @@ export default function FacilitiesManagement() {
       level: [],
       capacity: "",
       status: "Active",
-      startTime: "08:00 AM",
-      endTime: "06:00 PM",
+      startTime: "08:00",
+      endTime: "18:00",
       image: "",
       isDistributed: false,
       locationBatches: [{ block: "Main Building", level: "Level 1", quantity: "" }],
@@ -245,41 +245,109 @@ export default function FacilitiesManagement() {
   };
 
   const handleSave = () => {
-    // Basic Validation
-    if (!formData.name.trim()) {
+    // 1. Basic Name Validation
+    const nameStr = formData.name?.trim() || "";
+    if (!nameStr) {
       alert("Please enter a facility name.");
       return;
     }
-    if (activeTab === "Facilities" && (!formData.capacity || formData.capacity <= 0)) {
-      alert("Please enter a valid capacity.");
+    if (nameStr.length < 5) {
+      alert("Facility name must be at least 5 characters long.");
       return;
     }
 
-    // Unique Name Validation
-    const isDuplicate = facilities.some(f =>
-      f.name.toLowerCase() === formData.name.toLowerCase() && f.id !== formData.id
-    );
-
-    if (isDuplicate) {
-      alert("A facility with this name already exists. Please use a unique name.");
+    // 2. Category Validation
+    if (!formData.category) {
+      alert("Please select a valid category.");
       return;
     }
 
+    // 3. Time Validation
+    if (!formData.startTime?.trim() || !formData.endTime?.trim()) {
+      alert("Please specify both start and end availability times.");
+      return;
+    }
+    if (formData.startTime >= formData.endTime) {
+      alert("The end time must be after the start time.");
+      return;
+    }
+    
+    // 3.5 Description Validation
+    const descStr = formData.description?.trim() || "";
+    if (!descStr) {
+      alert(`Please write a description about the ${activeTab.slice(0, -1).toLowerCase()}.`);
+      return;
+    }
+    if (descStr.length <= 20) {
+      alert("The description ('About This') must be more than 20 characters long.");
+      return;
+    }
+
+    // 4. Capacity & Location Validation
     let locationStr = "";
     let totalCapacity = parseInt(formData.capacity) || 0;
 
     if (formData.isDistributed) {
-      locationStr = `DISTRIBUTED:${JSON.stringify({ locations: formData.locationBatches.filter(b => b.quantity > 0) })}`;
-      totalCapacity = formData.locationBatches.reduce((sum, b) => sum + (parseInt(b.quantity) || 0), 0);
+      if (!formData.locationBatches || formData.locationBatches.length === 0) {
+        alert("Distributed resources must have at least one location.");
+        return;
+      }
+      
+      let hasInvalidBatch = false;
+      let calculatedCapacity = 0;
+      
+      const validBatches = formData.locationBatches.map(b => {
+        const qty = parseInt(b.quantity) || 0;
+        if (!b.block || !b.level || qty <= 0) {
+          hasInvalidBatch = true;
+        }
+        calculatedCapacity += qty;
+        return { ...b, quantity: qty };
+      });
+
+      if (hasInvalidBatch) {
+        alert("Please ensure every distributed location has a valid block, level, and quantity greater than 0.");
+        return;
+      }
+      if (calculatedCapacity <= 0) {
+        alert("Total distributed quantity must be greater than 0.");
+        return;
+      }
+
+      locationStr = `DISTRIBUTED:${JSON.stringify({ locations: validBatches })}`;
+      totalCapacity = calculatedCapacity;
     } else {
-      locationStr = formData.level.length > 0 ? `${formData.block}, ${formData.level.join(', ')}` : formData.block;
+      if (!formData.block) {
+        alert("Please select a block or location detail.");
+        return;
+      }
+      if (!formData.level || formData.level.length === 0 || !formData.level[0]) {
+        alert("Please select a floor or level.");
+        return;
+      }
+      if (totalCapacity <= 0) {
+        alert(`Please enter a valid ${activeTab === "Facilities" ? "capacity" : "quantity"} greater than 0.`);
+        return;
+      }
+      locationStr = `${formData.block}, ${formData.level.join(', ')}`;
+    }
+
+    // 5. Unique Name Validation
+    const isDuplicate = facilities.some(f =>
+      f.name.toLowerCase() === nameStr.toLowerCase() && f.id !== formData.id
+    );
+
+    if (isDuplicate) {
+      alert(`A ${activeTab.slice(0, -1).toLowerCase()} with this name already exists. Please use a unique name.`);
+      return;
     }
 
     const updatedFacility = {
       ...formData,
+      name: nameStr,
       location: locationStr,
       capacity: totalCapacity,
-      availableSpaces: totalCapacity,
+      availableSpaces: totalCapacity, // Reset available spaces to capacity on save/update
       status: formData.status === "Active" ? "Available" : (formData.status === "Maintenance" ? "Maintenance" : "Booked")
     };
 
@@ -572,25 +640,23 @@ export default function FacilitiesManagement() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2 bg-slate-50 rounded-2xl p-1 border border-transparent focus-within:border-blue-200 focus-within:bg-white transition-all shadow-inner">
                     <input
-                      type="text"
+                      type="time"
                       value={formData.startTime}
                       onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                      className="flex-1 px-4 py-2.5 bg-transparent border-none text-sm font-semibold outline-none text-slate-600"
-                      placeholder="From (08:00 AM)"
+                      className="flex-1 px-4 py-2.5 bg-transparent border-none text-sm font-semibold outline-none text-slate-600 appearance-none cursor-pointer"
                     />
-                    <div className="p-2.5">
+                    <div className="p-2.5 pointer-events-none">
                       <Clock className="h-4 w-4 text-slate-400" />
                     </div>
                   </div>
                   <div className="flex items-center gap-2 bg-slate-50 rounded-2xl p-1 border border-transparent focus-within:border-blue-200 focus-within:bg-white transition-all shadow-inner">
                     <input
-                      type="text"
+                      type="time"
                       value={formData.endTime}
                       onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                      className="flex-1 px-4 py-2.5 bg-transparent border-none text-sm font-semibold outline-none text-slate-600"
-                      placeholder="To (06:00 PM)"
+                      className="flex-1 px-4 py-2.5 bg-transparent border-none text-sm font-semibold outline-none text-slate-600 appearance-none cursor-pointer"
                     />
-                    <div className="p-2.5">
+                    <div className="p-2.5 pointer-events-none">
                       <Clock className="h-4 w-4 text-slate-400" />
                     </div>
                   </div>

@@ -11,7 +11,9 @@ import {
   Tag, 
   FileText, 
   AlertTriangle, 
-  Phone
+  Phone,
+  Copy,
+  Check
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ROUTES } from "../utils/constants";
@@ -49,6 +51,7 @@ const MakeTicketPage = () => {
   });
 
   const [images, setImages] = useState([]);
+  const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
@@ -135,11 +138,29 @@ const MakeTicketPage = () => {
             Thank you for reporting. Your issue has been logged and our team will attend to it shortly.
           </p>
           
-          <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100">
+          <div className="bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100 relative group">
             <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">Ticket Reference ID</p>
-            <p className="text-xl font-mono font-bold text-blue-700 break-all">
-              {success.id}
-            </p>
+            <div className="flex items-center justify-center gap-3">
+              <p className="text-xl font-mono font-bold text-blue-700 break-all">
+                {success.id}
+              </p>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(success.id);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="p-2 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-100 hover:shadow-md transition-all active:scale-95"
+                title="Copy ID"
+              >
+                {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+            {copied && (
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black uppercase rounded-full shadow-lg animate-in fade-in slide-in-from-bottom-1">
+                Copied to Clipboard
+              </span>
+            )}
           </div>
 
           <div className="space-y-3">

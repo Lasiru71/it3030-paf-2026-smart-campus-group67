@@ -13,7 +13,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -95,21 +97,64 @@ public class IncidentTicketController {
         return ResponseEntity.ok(service.addComment(id, comment));
     }
 
+    @PatchMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<IncidentTicket> updateComment(
+            @PathVariable String id,
+            @PathVariable String commentId,
+            @RequestParam String userId,
+            @RequestBody String newText) {
+        return ResponseEntity.ok(service.updateComment(id, commentId, userId, newText));
+    }
+
+    @DeleteMapping("/{id}/comments/{commentId}")
+    public ResponseEntity<IncidentTicket> deleteComment(
+            @PathVariable String id,
+            @PathVariable String commentId,
+            @RequestParam String userId,
+            @RequestParam boolean isAdmin) {
+        return ResponseEntity.ok(service.deleteComment(id, commentId, userId, isAdmin));
+    }
+
     @GetMapping("/images/{filename:.+}")
     @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
-        Path filePath = Paths.get("uploads/incidents").resolve(filename);
         try {
+            // Robust path resolution: check multiple levels for 'uploads' folder
+            Path currentPath = Paths.get("").toAbsolutePath();
+            Path rootLocation = currentPath.resolve("uploads/incidents").normalize();
+            
+            if (!Files.exists(rootLocation)) {
+                // If not found in current dir, check the booking-management subfolder (common in multi-module projects)
+                rootLocation = currentPath.resolve("booking-management/uploads/incidents").normalize();
+            }
+            
+            Path filePath = rootLocation.resolve(filename).normalize();
+
+            if (!filePath.startsWith(rootLocation)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() || resource.isReadable()) {
+                // Dynamically determine content type
+                String contentType = Files.probeContentType(filePath);
+                if (contentType == null) {
+                    contentType = "application/octet-stream";
+                }
+
                 return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_JPEG)
+                        .contentType(MediaType.parseMediaType(contentType))
                         .body(resource);
             } else {
+                System.err.println("File not found or not readable: " + filePath);
                 return ResponseEntity.notFound().build();
             }
         } catch (MalformedURLException e) {
+            System.err.println("Malformed URL for file: " + filename + " - " + e.getMessage());
             return ResponseEntity.badRequest().build();
+        } catch (IOException e) {
+            System.err.println("Error reading file: " + filename + " - " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

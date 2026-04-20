@@ -9,7 +9,7 @@ import {
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3, User, MapPin, Calendar,
   Globe, Lock, Palette, Server, Mail, Smartphone, Moon, Sun, Database, RefreshCw, Save, Download,
   FileText, LayoutGrid, Plus, Minus, MessageSquare, CalendarDays, AlertCircle, Wrench,
-  Send, MessageCircle, ChevronDown
+  Send, MessageCircle, Pencil, ChevronDown, Hammer, Archive, XOctagon, List as ListIcon
 } from "lucide-react";
 import { ROUTES, BASE_URL } from "../utils/constants";
 import { bookingService } from "../services/bookingService";
@@ -86,7 +86,7 @@ const navSections = [
   },
 ];
 
-// ─── Toggle Switch ───────────────────────────────────────────
+// â”€â”€â”€ Toggle Switch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Toggle({ checked, onChange }) {
   return (
     <button
@@ -102,7 +102,7 @@ function Toggle({ checked, onChange }) {
   );
 }
 
-// ─── Settings Panel Helpers ────────────────────────────────────
+// â”€â”€â”€ Settings Panel Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const Field = ({ label, value, onChange, type = "text" }) => (
   <div>
     <label className="block text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1.5">{label}</label>
@@ -126,7 +126,7 @@ const Row = ({ label, sub, icon, iconBg, control }) => (
   </div>
 );
 
-// ─── Settings Panel ──────────────────────────────────────────
+// â”€â”€â”€ Settings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SettingsPanel() {
   const [notifs, setNotifs] = useState({ email: true, sms: false, push: true, booking: true, security: true });
   const [security, setSecurity] = useState({ twoFa: false, sessionTimeout: "30", loginAlerts: true });
@@ -153,7 +153,7 @@ function SettingsPanel() {
 
   return (
     <main className="flex-1 overflow-y-auto bg-slate-50">
-      {/* ── Colorful Hero Banner ── */}
+      {/* â”€â”€ Colorful Hero Banner â”€â”€ */}
       <div className="relative overflow-hidden px-8 py-6"
         style={{ background: "linear-gradient(135deg, #1d4ed8 0%, #4f46e5 50%, #7c3aed 100%)" }}
       >
@@ -357,7 +357,7 @@ function SettingsPanel() {
   );
 }
 
-// ─── Add User Modal ──────────────────────────────────────────
+// â”€â”€â”€ Add User Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function AddUserModal({ onClose, onAdd }) {
   const [formData, setFormData] = useState({ name: "", email: "", role: "USER", password: "User@123" });
 
@@ -427,7 +427,7 @@ function AddUserModal({ onClose, onAdd }) {
   );
 }
 
-// ─── Bookings Panel ──────────────────────────────────────────
+// â”€â”€â”€ Bookings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function BookingsPanel({ onGenerateReport }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -623,7 +623,7 @@ function BookingsPanel({ onGenerateReport }) {
   );
 }
 
-// ─── Message Box Panel ───────────────────────────────────────
+// â”€â”€â”€ Message Box Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MessageBoxPanel() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -705,7 +705,7 @@ function MessageBoxPanel() {
   );
 }
 
-// ─── Space Management Panel ──────────────────────────────────
+// â”€â”€â”€ Space Management Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SpaceManagementPanel() {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -962,8 +962,8 @@ function SpaceManagementPanel() {
   );
 }
 
-// ─── Individual Bookings Panel ─────────────────────────────
-// ─── Individual Bookings Panel ─────────────────────────────
+// â”€â”€â”€ Individual Bookings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ Individual Bookings Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const BUILDINGS = {
   "Main Building": ["Floor 01", "Floor 02", "Floor 03", "Floor 04"],
   "New Building": ["Floor 03", "Floor 05", "Floor 08", "Floor 09"]
@@ -1349,7 +1349,7 @@ function IndividualBookingsPanel() {
 }
 
 
-// ─── Tickets Panel ──────────────────────────────────────────
+// â”€â”€â”€ Tickets Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function TicketsPanel() {
   const [tickets, setTickets] = useState([]);
   const [technicians, setTechnicians] = useState([]);
@@ -1361,7 +1361,24 @@ function TicketsPanel() {
   const [selectedTech, setSelectedTech] = useState("");
   const [newComment, setNewComment] = useState("");
   const [isCommenting, setIsCommenting] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [search, setSearch] = useState("");
   const { auth } = useAuth();
+  
+  const ticketStats = [
+    { label: "Open", value: tickets.filter(t => t.status === "OPEN").length, icon: AlertCircle, color: "bg-blue-600" },
+    { label: "In Progress", value: tickets.filter(t => t.status === "IN_PROGRESS").length, icon: Hammer, color: "bg-amber-500" },
+    { label: "Resolved", value: tickets.filter(t => t.status === "RESOLVED").length, icon: CheckCircle, color: "bg-emerald-600" },
+    { label: "Closed", value: tickets.filter(t => t.status === "CLOSED").length, icon: Archive, color: "bg-slate-600" },
+    { label: "Rejected", value: tickets.filter(t => t.status === "REJECTED").length, icon: XOctagon, color: "bg-red-600" },
+  ];
+
+  const filteredTickets = tickets.filter(t => 
+    t.id.toLowerCase().includes(search.toLowerCase()) ||
+    t.resource?.toLowerCase().includes(search.toLowerCase()) ||
+    t.category?.toLowerCase().includes(search.toLowerCase())
+  );
 
   const fetchTickets = async () => {
     try {
@@ -1437,15 +1454,74 @@ function TicketsPanel() {
         text: newComment,
         timestamp: new Date().toISOString()
       };
-      const res = await axiosInstance.post(`/api/incidents/${selectedTicket.id}/comments`, comment);
-      setSelectedTicket(res.data);
-      setTickets(tickets.map(t => t.id === res.data.id ? res.data : t));
+      const tid = selectedTicket.id || selectedTicket._id;
+      const res = await axiosInstance.post(`/api/incidents/${tid}/comments`, comment);
+      const updated = res.data;
+      setSelectedTicket(updated);
+      setTickets(tickets.map(t => (t.id === (updated.id || updated._id) || t._id === (updated.id || updated._id)) ? updated : t));
       setNewComment("");
     } catch (err) {
       console.error("Failed to add comment", err);
     } finally {
       setIsCommenting(false);
     }
+  };
+
+  const handleUpdateComment = async (commentId) => {
+    if (!editText.trim() || !selectedTicket) return;
+    try {
+      const tid = selectedTicket.id || selectedTicket._id;
+      const res = await axiosInstance.patch(`/api/incidents/${tid}/comments/${commentId}`, editText, {
+        params: { userId: auth.id },
+        headers: { "Content-Type": "text/plain" }
+      });
+      const updated = res.data;
+      setSelectedTicket({...updated}); // Force new object reference
+      setTickets(tickets.map(t => (t.id === (updated.id || updated._id) || t._id === (updated.id || updated._id)) ? updated : t));
+      setEditingCommentId(null);
+      setEditText("");
+    } catch (err) {
+      console.error("Failed to update comment", err);
+      const msg = err.response?.data?.message || err.message || "Failed to update comment.";
+      alert(msg);
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    if (!selectedTicket || !window.confirm("Are you sure you want to delete this comment?")) return;
+    try {
+      const tid = selectedTicket.id || selectedTicket._id;
+      const res = await axiosInstance.delete(`/api/incidents/${tid}/comments/${commentId}`, {
+        params: { userId: auth.id, isAdmin: true }
+      });
+      const updated = res.data;
+      setSelectedTicket({...updated}); // Force new object reference
+      setTickets(tickets.map(t => (t.id === (updated.id || updated._id) || t._id === (updated.id || updated._id)) ? updated : t));
+    } catch (err) {
+      console.error("Failed to delete comment", err);
+      const msg = err.response?.data?.message || err.message || "Failed to delete comment.";
+      alert(msg);
+    }
+  };
+
+  const isWithinEditWindow = (timestamp) => {
+    if (!timestamp) return true;
+    try {
+      const postedTime = new Date(timestamp).getTime();
+      const now = new Date().getTime();
+      return (now - postedTime) < 15 * 60 * 1000;
+    } catch (e) {
+      return true;
+    }
+  };
+
+  const formatTimestamp = (ts) => {
+    if (!ts) return "---";
+    if (Array.isArray(ts)) {
+      const [year, month, day, hour, minute] = ts;
+      return new Date(year, month - 1, day, hour, minute).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   const getStatusStyle = (status) => {
@@ -1468,72 +1544,111 @@ function TicketsPanel() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="bg-white rounded-3xl border border-slate-200 p-20 text-center text-slate-500 font-medium font-black uppercase text-xs tracking-widest">
-          Loading tickets...
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        {ticketStats.map((stat, i) => (
+          <div key={i} className={`${stat.color} p-5 rounded-2xl shadow-lg flex items-center gap-4 hover:scale-[1.02] transition-transform group relative overflow-hidden`}>
+            <div className="h-12 w-12 flex items-center justify-center bg-white/10 rounded-xl border border-white/10 shadow-inner">
+              <stat.icon className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-black text-white/80 uppercase tracking-widest leading-none mb-1.5">{stat.label}</p>
+              <p className="text-2xl font-black text-white leading-none">{stat.value}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden min-h-[500px] flex flex-col">
+        {/* Search Bar Container */}
+        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1 lg:max-w-xl">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search tickets by ID, resource or category..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-12 pr-6 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-blue-500/20 shadow-inner"
+              />
+            </div>
+            <button className="h-[52px] w-[52px] bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 hover:text-blue-600 transition-all shadow-inner">
+              <Filter className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="flex bg-slate-50 p-1.5 rounded-xl border border-slate-100 shadow-inner">
+            <button className="p-2 bg-white text-blue-600 shadow-md rounded-lg"><LayoutGrid className="h-4 w-4" /></button>
+            <button className="p-2 text-slate-400 rounded-lg"><ListIcon className="h-4 w-4" /></button>
+          </div>
         </div>
-      ) : tickets.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-dashed border-slate-200 p-20 text-center shadow-sm">
-          <AlertCircle className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-          <p className="text-lg font-bold text-slate-500">All Clear!</p>
-          <p className="text-sm text-slate-400 mt-1">There are no maintenance tickets to display.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-black tracking-widest text-slate-400">
-                <th className="px-6 py-4">Ticket ID</th>
-                <th className="px-6 py-4">Resource</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Priority</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {tickets.map(ticket => (
-                <tr key={ticket.id} className="hover:bg-slate-50/50 transition-colors group">
-                  <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">{ticket.id}</td>
-                  <td className="px-6 py-4 font-bold text-sm text-slate-800">{ticket.resource}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-slate-600">{ticket.category}</td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
-                      ticket.priority === "URGENT" ? "bg-red-50 text-red-600 border border-red-100 shadow-sm shadow-red-100" :
-                      ticket.priority === "HIGH" ? "bg-orange-50 text-orange-600 border border-orange-100" :
-                      "bg-blue-50 text-blue-600 border border-blue-100"
-                    }`}>
-                      {ticket.priority}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm ${getStatusStyle(ticket.status)}`}>
-                      {ticket.status.replace("_", " ")}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => setSelectedTicket(ticket)}
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 hover:shadow-slate-200"
-                    >
-                      View Details
-                    </button>
-                  </td>
+
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center p-20 text-slate-500 font-black uppercase text-xs tracking-widest">
+            Loading tickets...
+          </div>
+        ) : filteredTickets.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-20 text-center animate-in fade-in duration-500">
+            <AlertCircle className="h-12 w-12 text-slate-200 mb-4" />
+            <p className="text-lg font-black text-slate-400">No matching tickets</p>
+            <p className="text-sm text-slate-400 mt-1">Try adjusting your search or filters.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase font-black tracking-widest text-slate-400">
+                  <th className="px-6 py-4">Ticket ID</th>
+                  <th className="px-6 py-4">Resource</th>
+                  <th className="px-6 py-4">Category</th>
+                  <th className="px-6 py-4">Priority</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredTickets.map(ticket => (
+                  <tr key={ticket.id} className="hover:bg-slate-50/50 transition-colors group">
+                    <td className="px-6 py-4 font-mono text-xs font-bold text-slate-500">{ticket.id}</td>
+                    <td className="px-6 py-4 font-bold text-sm text-slate-800">{ticket.resource}</td>
+                    <td className="px-6 py-4 text-sm font-semibold text-slate-600">{ticket.category}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-tight ${
+                        ticket.priority === "URGENT" ? "bg-red-50 text-red-600 border border-red-100 shadow-sm shadow-red-100" :
+                        ticket.priority === "HIGH" ? "bg-orange-50 text-orange-600 border border-orange-100" :
+                        "bg-blue-50 text-blue-600 border border-blue-100"
+                      }`}>
+                        {ticket.priority}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm ${getStatusStyle(ticket.status)}`}>
+                        {ticket.status.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        onClick={() => setSelectedTicket(ticket)}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-[10px] font-black uppercase tracking-wider rounded-xl shadow-lg transition-all active:scale-95 hover:shadow-slate-200"
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Detail Modal */}
       {selectedTicket && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-300 overflow-hidden">
-          <div className="bg-white rounded-[2.5rem] w-full max-w-5xl shadow-2xl border border-slate-100 overflow-hidden transform scale-100 animate-in zoom-in-95 duration-500 flex flex-col h-[85vh]">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-5xl shadow-2xl border border-slate-100 overflow-hidden transform scale-100 animate-in zoom-in-95 duration-500 flex flex-col h-[90vh]">
             <div className="px-10 py-8 border-b border-slate-100 flex items-center justify-between bg-white text-left">
               <div>
                 <h3 className="text-2xl font-black text-slate-900 leading-tight">Oversee Incident</h3>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Management Console • {selectedTicket.id}</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Management Console â€¢ {selectedTicket.id}</p>
               </div>
               <button onClick={() => { setSelectedTicket(null); setRejecting(false); }} className="h-10 w-10 rounded-full hover:bg-red-50 hover:text-red-500 text-slate-400 transition-all active:scale-95 flex items-center justify-center bg-slate-50 border border-slate-100">
                 <X className="h-5 w-5" />
@@ -1543,10 +1658,14 @@ function TicketsPanel() {
             <div className="flex-1 overflow-hidden flex">
               {/* Left Side: Detail & Controls */}
               <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar border-r border-slate-50">
-                <div className="grid grid-cols-2 gap-6 text-left">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
                   <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Resource Identity</label>
                     <p className="font-black text-slate-800 uppercase text-lg">{selectedTicket.resource}</p>
+                  </div>
+                  <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 uppercase">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Tracking ID</label>
+                    <p className="text-[11px] font-mono font-black text-slate-800 whitespace-nowrap overflow-x-auto custom-scrollbar-thin">{selectedTicket.id}</p>
                   </div>
                   <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Live Status</label>
@@ -1562,7 +1681,7 @@ function TicketsPanel() {
                     <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                        <Shield className="h-12 w-12" />
                     </div>
-                    <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-3 italic">{selectedTicket.category} • Priority: {selectedTicket.priority}</p>
+                    <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-3 italic">{selectedTicket.category} â€¢ Priority: {selectedTicket.priority}</p>
                     <p className="text-sm text-slate-700 leading-relaxed font-bold italic antialiased">
                       "{selectedTicket.description}"
                     </p>
@@ -1576,7 +1695,7 @@ function TicketsPanel() {
                       {selectedTicket.imageUrls.map((url, i) => (
                         <div key={i} className="group relative">
                           <img 
-                            src={`${BASE_URL}${url}`} 
+                            src={encodeURI(url.startsWith('http') ? url : `${BASE_URL}${url}`)} 
                             alt="Evidence" 
                             className="h-32 w-32 object-cover rounded-[1.5rem] border border-slate-200 shadow-lg transition-all group-hover:scale-105 group-hover:ring-8 group-hover:ring-blue-50 cursor-zoom-in" 
                           />
@@ -1623,7 +1742,7 @@ function TicketsPanel() {
                             </div>
                             <div>
                                <p className="text-xs font-black text-slate-800 leading-none">{selectedTicket.technicianName || "System Auto"}</p>
-                               <p className="text-[8px] font-black text-blue-400 uppercase mt-1 tracking-widest">Authorized Technician</p>
+                               <p className="text-[8px] font-black text-slate-400 uppercase mt-1 tracking-widest">Authorized Technician</p>
                             </div>
                           </div>
                        </div>
@@ -1668,8 +1787,8 @@ function TicketsPanel() {
               </div>
 
               {/* Right Side: Communication Logs */}
-              <div className="w-[450px] bg-slate-50 flex flex-col p-10 h-full border-l border-slate-100">
-                  <div className="flex items-center justify-between mb-8">
+              <div className="w-[450px] bg-slate-50 flex flex-col px-8 py-8 h-full border-l border-slate-100">
+                  <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xs font-black text-slate-900 uppercase tracking-[0.2em] flex items-center gap-2">
                        <MessageSquare className="h-4 w-4 text-blue-500" /> Interaction Logs
                     </h3>
@@ -1678,26 +1797,71 @@ function TicketsPanel() {
                     </div>
                   </div>
 
-                  <div className="flex-1 space-y-8 overflow-y-auto pr-2 mb-8 custom-scrollbar scroll-smooth">
-                    {selectedTicket.comments && selectedTicket.comments.length > 0 ? selectedTicket.comments.map((comment, i) => (
-                      <div key={i} className={`flex flex-col ${comment.authorId === auth.id ? "items-end" : "items-start"}`}>
-                        <div className={`max-w-[85%] p-5 rounded-[2rem] shadow-sm text-xs font-bold leading-relaxed antialiased ${
-                          comment.authorId === auth.id ? "bg-blue-600 text-white rounded-tr-none shadow-blue-100" : "bg-white text-slate-800 rounded-tl-none border border-slate-100"
-                        }`}>
-                          {comment.text}
+                  <div className="flex-1 space-y-6 overflow-y-auto pr-2 mb-6 custom-scrollbar scroll-smooth">
+                    {selectedTicket.comments && selectedTicket.comments.length > 0 ? selectedTicket.comments.map((comment, i) => {
+                      const isStudent = comment.authorId === selectedTicket.studentId;
+                      const commentId = comment.id || comment._id;
+                      return (
+                        <div key={commentId || i} className={`flex flex-col ${isStudent ? "items-start" : "items-end"} group relative mb-6 last:mb-0`}>
+                          <div className={`flex items-center gap-3 mb-2 px-2 ${isStudent ? "flex-row" : "flex-row-reverse"}`}>
+                            <div className="h-6 w-6 rounded-full bg-slate-200 flex items-center justify-center border border-white shadow-sm">
+                               <User className="h-3 w-3 text-slate-500" />
+                            </div>
+                            <p className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-400">
+                              {comment.authorName} • {isStudent ? "STUDENT" : "UNIT"} • {formatTimestamp(comment.timestamp)}
+                            </p>
+                          </div>
+                          
+                          <div className={`flex items-end gap-3 max-w-[95%] ${isStudent ? "flex-row" : "flex-row-reverse"}`}>
+                            <div className={`relative px-6 py-4 rounded-[1.8rem] shadow-sm text-xs font-bold leading-relaxed antialiased transition-all ${
+                              isStudent 
+                                ? "bg-white text-slate-800 rounded-tr-none border border-slate-100" 
+                                : "bg-slate-900 text-white rounded-tl-none shadow-slate-200"
+                            }`}>
+                              {editingCommentId === commentId ? (
+                                <div className="flex flex-col gap-4 min-w-[280px]">
+                                  <textarea 
+                                    value={editText}
+                                    onChange={(e) => setEditText(e.target.value)}
+                                    className="w-full border-none rounded-xl p-0 focus:outline-none min-h-[100px] text-xs bg-transparent text-inherit resize-none"
+                                    autoFocus
+                                  />
+                                  <div className="flex justify-end gap-2 border-t border-white/10 pt-3">
+                                    <button onClick={() => setEditingCommentId(null)} className="px-4 py-2 text-[9px] uppercase font-black rounded-lg bg-white/10 hover:bg-white/20 text-white transition-all">Cancel</button>
+                                    <button onClick={() => handleUpdateComment(commentId)} className="px-6 py-2 text-[9px] uppercase font-black rounded-lg bg-white text-slate-900 hover:bg-slate-100 shadow-xl transition-all">Save Changes</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="whitespace-pre-wrap">{comment.text}</p>
+                              )}
+                            </div>
+
+                            {editingCommentId !== commentId && (comment.authorId === auth.id || auth.role === "ADMIN") && (
+                              <div className={`flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-[-4px] shrink-0`}>
+                                {comment.authorId === auth.id && isWithinEditWindow(comment.timestamp) && (
+                                  <button 
+                                    onClick={() => { setEditingCommentId(commentId); setEditText(comment.text); }} 
+                                    className="h-9 w-9 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-200 hover:shadow-xl hover:scale-110 active:scale-95 transition-all"
+                                    title="Edit Protocol"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </button>
+                                )}
+                                <button 
+                                  onClick={() => handleDeleteComment(commentId)} 
+                                  className="h-9 w-9 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-600 hover:border-red-200 hover:shadow-xl hover:scale-110 active:scale-95 transition-all"
+                                  title="Purge Log"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="mt-2 flex items-center gap-2 px-3">
-                           <p className={`text-[9px] font-black uppercase tracking-widest ${comment.authorId === auth.id ? "text-blue-400" : "text-slate-400"}`}>
-                             {comment.authorName} • {
-                               comment.authorId === selectedTicket.studentId ? "STUDENT" : 
-                               comment.authorId === selectedTicket.technicianId ? "STAFF" : "ADMIN"
-                             } • {new Date(comment.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                           </p>
-                        </div>
-                      </div>
-                    )) : (
+                      );
+                    }) : (
                       <div className="flex-1 flex flex-col items-center justify-center text-center opacity-30 mt-20">
-                         <div className="h-20 w-20 bg-slate-200/50 rounded-full flex items-center justify-center mb-4">
+                         <div className="h-20 w-20 bg-white/50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
                             <MessageCircle className="h-10 w-10 text-slate-300" />
                          </div>
                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">No Communications</p>
@@ -1713,12 +1877,12 @@ function TicketsPanel() {
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
                         placeholder="Post admin instruction..."
-                        className="w-full bg-white border border-slate-200 rounded-3xl pl-6 pr-14 py-5 text-xs font-bold shadow-2xl shadow-slate-200/50 focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all placeholder:text-slate-300"
+                        className="w-full bg-white border border-slate-200 rounded-3xl pl-6 pr-14 py-4 text-xs font-bold shadow-2xl shadow-slate-200/50 focus:outline-none focus:ring-4 focus:ring-blue-50 focus:border-blue-300 transition-all placeholder:text-slate-300"
                       />
                       <button 
                         type="submit" 
                         disabled={isCommenting || !newComment.trim()}
-                        className="absolute right-3 top-3 h-11 w-11 bg-slate-900 rounded-2xl text-white flex items-center justify-center hover:bg-black active:scale-90 transition-all shadow-lg disabled:opacity-50"
+                        className="absolute right-3 top-2.5 h-9 w-9 bg-slate-900 rounded-xl text-white flex items-center justify-center hover:bg-black active:scale-90 transition-all shadow-lg disabled:opacity-50"
                       >
                         <Send className="h-5 w-5" />
                       </button>
@@ -1918,7 +2082,7 @@ export default function AdminDashboardPage() {
       alternateRowStyles: { fillColor: [248, 250, 252] },
     });
     doc.save("CampusReserve_System_Overview.pdf");
-    setToast("System overview report downloaded! 📊");
+    setToast("System overview report downloaded! ðŸ“Š");
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -2067,6 +2231,7 @@ export default function AdminDashboardPage() {
       console.error("Stats failure", err);
       setToast("Error: Failed to gather statistics.");
     }
+
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -2116,7 +2281,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      {/* ══════════ SIDEBAR ══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â• SIDEBAR â•â•â•â•â•â•â•â•â•â• */}
       <aside
         className="w-64 shrink-0 flex flex-col h-full border-r border-white/5"
         style={{ background: "linear-gradient(175deg, #0f172a 0%, #1e293b 60%, #0f172a 100%)" }}
@@ -2184,7 +2349,7 @@ export default function AdminDashboardPage() {
               <p className="text-white text-xs font-bold truncate">{displayName}</p>
               <p className="text-slate-500 text-[10px]">Administrator</p>
             </div>
-            <Edit3 className="h-3.5 w-3.5 text-slate-600 group-hover:text-blue-400 ml-auto shrink-0 transition-colors" />
+            <Edit3 className="h-3.5 w-3.5 text-slate-600 group-hover:text-slate-400 ml-auto shrink-0 transition-colors" />
           </button>
           <button
             onClick={() => { logoutUser(); navigate(ROUTES.HOME); }}
@@ -2195,13 +2360,13 @@ export default function AdminDashboardPage() {
         </div>
       </aside>
 
-      {/* ══════════ MAIN CONTENT ══════════ */}
+      {/* â•â•â•â•â•â•â•â•â•â• MAIN CONTENT â•â•â•â•â•â•â•â•â•â• */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Topbar */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 shadow-sm">
           <div>
             <h1 className="text-lg font-black text-slate-900 leading-none">{activeNav}</h1>
-            <p className="text-xs text-slate-400 mt-0.5 font-medium">Welcome back, {displayName} 👋</p>
+            <p className="text-xs text-slate-400 mt-0.5 font-medium">Welcome back, {displayName} ðŸ‘‹</p>
           </div>
           <div className="flex items-center gap-3">
 
@@ -2209,7 +2374,7 @@ export default function AdminDashboardPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search users…"
+                placeholder="Search usersâ€¦"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-9 pr-4 py-2 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-52 transition"
@@ -2219,7 +2384,7 @@ export default function AdminDashboardPage() {
           </div>
         </header>
 
-        {/* Body — conditionally render panels */}
+        {/* Body â€” conditionally render panels */}
         {activeNav === "Settings" && <SettingsPanel displayName={displayName} />}
         {activeNav === "Bookings" && <BookingsPanel onGenerateReport={generateBookingPDF} />}
         {activeNav === "Message Box" && <MessageBoxPanel />}
@@ -2233,7 +2398,7 @@ export default function AdminDashboardPage() {
         {(activeNav === "Overview" || activeNav === "Users" || activeNav === "Analytics" || activeNav === "Reports") && (
           <main className={`flex-1 overflow-y-auto px-8 py-7 bg-slate-50 ${(activeNav === "Overview" || activeNav === "Analytics" || activeNav === "Reports") ? "space-y-7" : ""} animate-in fade-in slide-in-from-bottom-2 duration-500`}>
 
-            {/* ─ Colorful Stats ─ */}
+            {/* â”€ Colorful Stats â”€ */}
             {activeNav === "Overview" && (
               <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
                 {[
@@ -2302,7 +2467,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* ─ User Growth Trend + Enrollment Distribution ─ */}
+            {/* â”€ User Growth Trend + Enrollment Distribution â”€ */}
             {activeNav === "Overview" && (
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-7">
                 {/* User Growth Trend (Line Chart) */}
@@ -2401,7 +2566,7 @@ export default function AdminDashboardPage() {
 
 
 
-            {/* ─ System Analytics Tab ─ */}
+            {/* â”€ System Analytics Tab â”€ */}
             {activeNav === "Analytics" && (
               <div className="space-y-7">
                 {/* Header */}
@@ -2483,7 +2648,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* ─ Reports Tab ─ */}
+            {/* â”€ Reports Tab â”€ */}
             {activeNav === "Reports" && (
               <div className="space-y-7">
                 <div>
@@ -2575,7 +2740,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* ─ User Table ─ */}
+            {/* â”€ User Table â”€ */}
             {activeNav === "Users" && (
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden min-h-[600px]">
                 {/* Table header */}
