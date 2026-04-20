@@ -23,6 +23,7 @@ import BookingPage from "../pages/BookingPage";
 import IndividualBookingPage from "../pages/IndividualBookingPage";
 import MyIndividualHistoryPage from "../pages/MyIndividualHistoryPage";
 import FacilityDetailPage from "../pages/FacilityDetailPage";
+import StaffHistoryPage from "../pages/StaffHistoryPage";
 
 const AppRouter = () => {
   return (
@@ -108,6 +109,16 @@ const AppRouter = () => {
           element={
             <ProtectedRoute allowedRoles={["TECHNICIAN", "STAFF"]}>
               <StaffDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Staff History route */}
+        <Route
+          path={ROUTES.STAFF_HISTORY}
+          element={
+            <ProtectedRoute allowedRoles={["TECHNICIAN", "STAFF"]}>
+              <StaffHistoryPage />
             </ProtectedRoute>
           }
         />
