@@ -25,6 +25,7 @@ export const markAllAsRead = () => axiosInstance.patch("/api/notifications/read-
  * Delete a specific notification
  * @param {string} id 
  */
+export const deleteNotification = (id) => axiosInstance.delete(`/api/notifications/${id}`);
 
 /**
  * Get aggregate notification statistics (Admin only)
