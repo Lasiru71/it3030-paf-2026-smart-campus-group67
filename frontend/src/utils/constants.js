@@ -2,7 +2,9 @@
 
 export const APP_NAME = "CampusReserve";
 
-export const BASE_URL = "http://localhost:8081";
+export const BASE_URL = typeof window !== 'undefined' 
+  ? window.location.origin.replace(':5173', ':8081') 
+  : "http://localhost:8081";
 
 export const AUTH_STORAGE_KEY = "campus_reserve_auth";
 
@@ -25,6 +27,7 @@ export const ROUTES = {
   ADMIN_DASHBOARD: "/admin",
   ADMIN_PROFILE: "/admin/profile",
   STAFF_DASHBOARD: "/staff",
+  STAFF_HISTORY: "/staff/history",
   TRACK_TICKET: "/track-ticket",
   UNAUTHORIZED: "/unauthorized",
 };

@@ -7,7 +7,7 @@ import {
   Trash2, Edit, LogOut, Bell, Search, TrendingUp,
   Activity, Home, ChevronRight, X, CheckCircle, Clock, Edit3,
   MapPin, Plus, ArrowRight, XCircle, Layers, Globe, Zap, AlertCircle,
-  Wrench
+  Wrench, LifeBuoy, ClipboardList
 } from "lucide-react";
 import { ROUTES } from "../utils/constants";
 
@@ -26,6 +26,12 @@ const navSections = [
     header: "ACADEMIC", items: [
       { icon: BookOpen, label: "Resources", route: ROUTES.RESOURCES },
       { icon: Zap, label: "Help & Support", route: ROUTES.CONTACT }
+    ]
+  },
+  {
+    header: "SUPPORT", items: [
+      { icon: LifeBuoy, label: "Make Ticket", route: ROUTES.MAKE_TICKET },
+      { icon: ClipboardList, label: "Track Ticket", route: ROUTES.TRACK_TICKET }
     ]
   },
 ];
@@ -154,6 +160,7 @@ export default function StudentDashboardPage() {
               <p className="px-4 mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{section.header}</p>
               <div className="space-y-0.5">
                 {section.items.map((item) => {
+                  if (item.label === "My History" && (isStaff || isTechnician)) return null;
                   const active = activeNav === item.label;
                   return (
                     <button
@@ -351,6 +358,7 @@ export default function StudentDashboardPage() {
                   {[
                     { label: "Find Resources", icon: Search, to: ROUTES.RESOURCES, color: "text-blue-600 bg-blue-50" },
                     { label: "My Profile", icon: Shield, to: ROUTES.STUDENT_PROFILE, color: "text-violet-600 bg-violet-50" },
+                    { label: "Make a Ticket", icon: AlertCircle, to: ROUTES.MAKE_TICKET, color: "text-red-600 bg-red-50" },
                     { label: "Contact Admin", icon: Globe, to: ROUTES.CONTACT, color: "text-amber-600 bg-amber-50" },
                   ].map((tool, idx) => (
                     <Link key={idx} to={tool.to} className="flex items-center gap-4 p-3.5 rounded-2xl border border-slate-50 hover:border-emerald-100 hover:bg-emerald-50/30 transition-all group">

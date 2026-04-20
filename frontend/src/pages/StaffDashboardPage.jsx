@@ -2,13 +2,17 @@ import React, { useState, useEffect } from "react";
 import { 
     Search, Filter, Clock, MoreVertical, CheckCircle, 
     MessageSquare, Send, User, ChevronRight, AlertCircle,
-    Activity, Shield, Mail, Calendar, MapPin, Tag, Wrench, X, Pencil, Trash2, MessageCircle
+    Activity, Shield, Mail, Calendar, MapPin, Tag, Wrench, X, Pencil, Trash2, MessageCircle,
+    History
 } from "lucide-react";
 import axiosInstance from "../services/axiosInstance";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../utils/constants";
 
 const StaffDashboardPage = () => {
     const { auth } = useAuth();
+    const navigate = useNavigate();
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState(null);
@@ -47,13 +51,23 @@ const StaffDashboardPage = () => {
     };
 
     const formatTimestamp = (ts) => {
-        if (!ts) return "";
-        return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        if (!ts) return "---";
+        try {
+            if (Array.isArray(ts)) {
+                const [year, month, day, hour, minute] = ts;
+                return new Date(year, month - 1, day, hour, minute).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            const date = new Date(ts);
+            if (isNaN(date.getTime())) return "---";
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return "---";
+        }
     };
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            const res = await axiosInstance.put(`/api/incidents/${id}/status`, null, { 
+            const res = await axiosInstance.patch(`/api/incidents/${id}/status`, null, { 
                 params: { status } 
             });
             const updated = res.data;
@@ -225,7 +239,8 @@ const StaffDashboardPage = () => {
                                 <div className="p-10 pb-0 flex justify-between items-start border-b border-slate-50 mb-8">
                                     <div className="pb-8">
                                         <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2 uppercase">{selectedTicket.resource}</h2>
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex flex-wrap items-center gap-4">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Ticket ID: {selectedTicket.id}</p>
                                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getStatusStyles(selectedTicket.status)}`}>
                                                 {selectedTicket.status.replace("_", " ")}
                                             </span>
@@ -269,10 +284,14 @@ const StaffDashboardPage = () => {
                                             <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 italic text-slate-600 font-bold text-sm leading-relaxed shadow-inner">
                                                 "{selectedTicket.description}"
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                 <div className="bg-white border border-slate-100 p-4 rounded-2xl">
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Requester</p>
-                                                    <p className="font-black text-slate-800 truncate">{selectedTicket.studentName || selectedTicket.studentId}</p>
+                                                    <p className="text-[11px] font-mono font-black text-slate-800 whitespace-nowrap overflow-x-auto custom-scrollbar-thin">{selectedTicket.studentName || selectedTicket.studentId}</p>
+                                                </div>
+                                                <div className="bg-white border border-slate-100 p-4 rounded-2xl">
+                                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tracking ID</p>
+                                                    <p className="text-[11px] font-mono font-black text-slate-800 whitespace-nowrap overflow-x-auto custom-scrollbar-thin">{selectedTicket.id}</p>
                                                 </div>
                                                 <div className="bg-white border border-slate-100 p-4 rounded-2xl">
                                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Date Logged</p>
@@ -280,6 +299,23 @@ const StaffDashboardPage = () => {
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {selectedTicket.imageUrls?.length > 0 && (
+                                            <div className="text-left mt-8">
+                                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-4">Evidence Gallery</label>
+                                                <div className="flex flex-wrap gap-4">
+                                                    {selectedTicket.imageUrls.map((url, i) => (
+                                                        <div key={i} className="group relative">
+                                                            <img 
+                                                                src={encodeURI(url.startsWith('http') ? url : `${BASE_URL}${url}`)} 
+                                                                alt="Evidence" 
+                                                                className="h-32 w-32 object-cover rounded-[1.5rem] border border-slate-200 shadow-lg transition-all group-hover:scale-105 group-hover:ring-8 group-hover:ring-blue-50 cursor-zoom-in" 
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {selectedTicket.status === "RESOLVED" && (
                                             <div className="bg-emerald-50 rounded-[2rem] p-8 border border-emerald-100">
@@ -305,12 +341,12 @@ const StaffDashboardPage = () => {
                                                const isStudent = c.authorId === selectedTicket.studentId;
                                                const commentId = c.id || c._id;
                                                return (
-                                                  <div key={commentId || i} className={`flex flex-col ${isStudent ? "items-end text-right" : "items-start text-left"} group relative border-b border-slate-200/40 last:border-0 pb-6`}>
+                                                  <div key={commentId || i} className={`flex flex-col ${isStudent ? "items-start text-left" : "items-end text-right"} group relative border-b border-slate-200/40 last:border-0 pb-6`}>
                                                      <p className="mb-2 text-[8px] font-black uppercase tracking-widest text-slate-400">
                                                          {c.authorName} • {isStudent ? "STUDENT" : "STAFF"} • {formatTimestamp(c.timestamp)}
                                                      </p>
                                                      
-                                                     <div className={`flex items-start gap-4 ${isStudent ? "flex-row-reverse" : "flex-row"} max-w-[100%]`}>
+                                                     <div className={`flex items-start gap-4 ${isStudent ? "flex-row" : "flex-row-reverse"} max-w-[100%]`}>
                                                         <div className={`max-w-[85%] text-[11px] font-bold leading-relaxed antialiased ${isStudent ? "text-slate-800" : "text-slate-600"}`}>
                                                            {editingCommentId === commentId ? (
                                                               <div className="flex flex-col gap-3 min-w-[240px] mt-2 bg-white p-4 rounded-2xl shadow-xl border border-slate-100">

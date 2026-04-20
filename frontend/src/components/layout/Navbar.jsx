@@ -10,13 +10,7 @@ import { ROUTES } from "../../utils/constants";
 
 const guestLinks = [
   { label: "Home", to: ROUTES.HOME },
-  { 
-    label: "Facilities & Resources", 
-    subLinks: [
-      { label: "All Facilities & Resources", to: ROUTES.RESOURCES },
-      { label: "Individual Support", to: ROUTES.INDIVIDUAL_BOOKINGS },
-    ]
-  },
+  { label: "Facilities & Resources", to: ROUTES.RESOURCES },
   { label: "About", to: ROUTES.ABOUT },
   { label: "Contact", to: ROUTES.CONTACT },
 ];
@@ -44,15 +38,7 @@ const Navbar = () => {
   // Build nav links based on role
   const authLinks = [
     { label: "Home", to: ROUTES.HOME },
-    { 
-      label: "Facilities & Resources", 
-      subLinks: [
-        { label: "All Facilities & Resources", to: ROUTES.RESOURCES },
-        ...(!isAdmin && !isTechnician ? [
-          { label: "Individual Support", to: ROUTES.INDIVIDUAL_BOOKINGS },
-        ] : []),
-      ]
-    },
+    { label: "Facilities & Resources", to: ROUTES.RESOURCES },
     // Role-specific links
     ...(isTechnician ? [{ label: "Technician Portal", to: ROUTES.TECHNICIAN_DASHBOARD }] : []),
     
