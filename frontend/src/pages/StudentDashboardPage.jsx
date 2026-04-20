@@ -160,6 +160,7 @@ export default function StudentDashboardPage() {
               <p className="px-4 mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{section.header}</p>
               <div className="space-y-0.5">
                 {section.items.map((item) => {
+                  if (item.label === "My History" && (isStaff || isTechnician)) return null;
                   const active = activeNav === item.label;
                   return (
                     <button

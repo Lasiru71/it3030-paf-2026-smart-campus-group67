@@ -2,14 +2,17 @@ import React, { useState, useEffect } from "react";
 import { 
     Search, Filter, Clock, MoreVertical, CheckCircle, 
     MessageSquare, Send, User, ChevronRight, AlertCircle,
-    Activity, Shield, Mail, Calendar, MapPin, Tag, Wrench, X, Pencil, Trash2, MessageCircle
+    Activity, Shield, Mail, Calendar, MapPin, Tag, Wrench, X, Pencil, Trash2, MessageCircle,
+    History
 } from "lucide-react";
 import axiosInstance from "../services/axiosInstance";
 import { useAuth } from "../context/AuthContext";
-import { BASE_URL } from "../utils/constants";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "../utils/constants";
 
 const StaffDashboardPage = () => {
     const { auth } = useAuth();
+    const navigate = useNavigate();
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState(null);
