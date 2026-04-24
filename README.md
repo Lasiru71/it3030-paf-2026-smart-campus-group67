@@ -66,9 +66,9 @@ The application consists of a React-based frontend and a Spring Boot REST API ba
 2. Install dependencies:
    npm install
 3. Run the application:
-   npm start
+   npm run dev
 4. App will run on:
-   http://localhost:3000
+   http://localhost:5173
 
 
 
