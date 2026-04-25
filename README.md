@@ -50,12 +50,9 @@ The application consists of a React-based frontend and a Spring Boot REST API ba
 
 #Backend (Spring Boot)
 
-1. Navigate to backend folder:
-   cd backend
-2. Run the application:
-   mvn spring-boot:run
-3. Server will start on:
-   http://localhost:8081
+1. Navigate to backend folder: cd booking-management
+2. Run the application: mvn spring-boot:run
+3. Server will start on: http://localhost:8081
 
 ---
 
@@ -81,4 +78,4 @@ The application consists of a React-based frontend and a Spring Boot REST API ba
 
 ## 📎 Repository Naming
 
-it3030-paf-2026-smart-campus-group67
+it3030-paf-2026-smart-campus-group64
