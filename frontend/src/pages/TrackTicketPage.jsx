@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import axiosInstance from "../services/axiosInstance";
 import { useAuth } from "../context/AuthContext";
+import { BASE_URL } from "../utils/constants";
 
 const TrackTicketPage = () => {
     const { auth, isTechnician } = useAuth();
@@ -250,6 +251,23 @@ const TrackTicketPage = () => {
                                         "{ticket.description}"
                                     </div>
                                 </div>
+
+                                {ticket.imageUrls && ticket.imageUrls.length > 0 && (
+                                    <div className="space-y-4 pb-8 border-b border-slate-50 mb-8">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Evidence Gallery</p>
+                                        <div className="flex flex-wrap gap-4">
+                                            {ticket.imageUrls.map((url, i) => (
+                                                <div key={i} className="group relative">
+                                                    <img 
+                                                        src={url.startsWith('http') ? url : `${BASE_URL}${url}`} 
+                                                        alt="Evidence" 
+                                                        className="h-32 w-32 object-cover rounded-[1.5rem] border border-slate-200 shadow-lg transition-all hover:scale-105 cursor-zoom-in" 
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {ticket.status === "RESOLVED" || ticket.status === "CLOSED" ? (
                                     <div>
                                         <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Final Resolution</p>

@@ -1695,7 +1695,7 @@ function TicketsPanel() {
                       {selectedTicket.imageUrls.map((url, i) => (
                         <div key={i} className="group relative">
                           <img 
-                            src={encodeURI(url.startsWith('http') ? url : `${BASE_URL}${url}`)} 
+                            src={url.startsWith('http') ? url : `${BASE_URL}${url}`} 
                             alt="Evidence" 
                             className="h-32 w-32 object-cover rounded-[1.5rem] border border-slate-200 shadow-lg transition-all group-hover:scale-105 group-hover:ring-8 group-hover:ring-blue-50 cursor-zoom-in" 
                           />
