@@ -40,8 +40,39 @@ import { renderLocation } from "../utils/formatters";
 import { facilityService } from "../services/facilityService";
 import { bookingService } from "../services/bookingService";
 
-// Mock Data
-// Moved initialFacilities to facilityService.js
+// Initial Mock Data to match the previous working state
+const initialFacilities = [
+  {
+    id: "f1",
+    name: "University Gymnasium",
+    category: "Sports Facility",
+    capacity: 40,
+    availableSpaces: 40,
+    location: "Arts Pavillion, Basement",
+    status: "Available",
+    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop"
+  },
+  {
+    id: "f2",
+    name: "University Swimming Pool",
+    category: "Sports Facility",
+    capacity: 40,
+    availableSpaces: 0,
+    location: "Arts Pavillion, Basement",
+    status: "Maintenance",
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=2070&auto=format&fit=crop"
+  },
+  {
+    id: "f3",
+    name: "Seminar Halls",
+    category: "L Halls",
+    capacity: 80,
+    availableSpaces: 80,
+    location: "G Block, Level 10",
+    status: "Available",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2070&auto=format&fit=crop"
+  }
+];
 
 const statusStyles = {
   Available: "bg-emerald-50 text-emerald-600 border-emerald-100",
@@ -67,7 +98,7 @@ export default function FacilitiesManagement() {
 
   const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
-  const [facilities, setFacilities] = useState([]);
+  const [facilities, setFacilities] = useState(initialFacilities);
   
   // Schedule state
   const [schedulingFacility, setSchedulingFacility] = useState(null);
@@ -116,8 +147,20 @@ export default function FacilitiesManagement() {
 
   useEffect(() => {
     const fetchFacilities = async () => {
-      const data = await facilityService.getAll();
-      setFacilities(data);
+      try {
+        const data = await facilityService.getAll();
+        if (Array.isArray(data)) {
+          // Merge API data with mock data, preferring API data for same IDs
+          setFacilities(prev => {
+            const validData = data.filter(f => f && (f.id || f._id));
+            const apiIds = new Set(validData.map(f => String(f.id || f._id)));
+            const filteredMock = prev.filter(f => f && !apiIds.has(String(f.id || f._id)));
+            return [...validData, ...filteredMock];
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch facilities:", err);
+      }
     };
     fetchFacilities();
   }, []);
@@ -142,7 +185,9 @@ export default function FacilitiesManagement() {
   });
 
   const currentItems = Array.isArray(facilities) ? facilities.filter(f => {
-    const isResourceCategory = resourcesCategories.includes(f.category);
+    if (!f) return false;
+    const category = (f.category || "").trim();
+    const isResourceCategory = resourcesCategories.includes(category);
     if (activeTab === "Facilities") return !isResourceCategory;
     return isResourceCategory;
   }) : [];
@@ -997,7 +1042,7 @@ export default function FacilitiesManagement() {
         <div className="flex-1 p-8">
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-              {currentItems.filter(f => f.name.toLowerCase().includes(search.toLowerCase())).map(f => (
+              {currentItems.filter(f => f && (f.name || "").toLowerCase().includes((search || "").toLowerCase())).map(f => (
                 <div key={f.id} className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-400 overflow-hidden relative">
                   <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
 
@@ -1016,7 +1061,7 @@ export default function FacilitiesManagement() {
                         {/* Title and Category */}
                         <div className="flex-1 min-w-0 pr-2">
                           <h4 className="text-lg font-black text-slate-800 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2" title={f.name}>
-                            {f.name}
+                            {f.name || "Unnamed Facility"}
                           </h4>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5 truncate">{f.category}</p>
                         </div>
@@ -1079,7 +1124,7 @@ export default function FacilitiesManagement() {
                 <tbody>
                   {currentItems.map(f => (
                     <tr key={f.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-8 py-5"><span className="text-sm font-black text-slate-800">{f.name}</span></td>
+                      <td className="px-8 py-5"><span className="text-sm font-black text-slate-800">{f.name || "Unnamed"}</span></td>
                       <td className="px-8 py-5 text-xs font-bold text-slate-500">{f.category}</td>
                       <td className="px-8 py-5 text-xs font-bold text-slate-500">{renderLocation(f.location)}</td>
                       <td className="px-8 py-5 text-center">
