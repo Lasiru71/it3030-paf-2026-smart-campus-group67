@@ -4,7 +4,7 @@ export const facilityService = {
   getAll: async () => {
     try {
       const response = await axiosInstance.get("/api/resources");
-      return response.data;
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error("Error fetching resources:", error);
       return [];

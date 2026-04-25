@@ -46,6 +46,7 @@ import { bookingService } from "../services/bookingService";
 const statusStyles = {
   Available: "bg-emerald-50 text-emerald-600 border-emerald-100",
   Occupied: "bg-amber-50 text-amber-600 border-amber-100",
+  Booked: "bg-amber-50 text-amber-600 border-amber-100",
   Maintenance: "bg-red-50 text-red-600 border-red-100",
   Other: "bg-slate-50 text-slate-600 border-slate-100",
 };
@@ -53,6 +54,7 @@ const statusStyles = {
 const statusIcons = {
   Available: <CheckCircle2 className="h-3.5 w-3.5" />,
   Occupied: <Clock className="h-3.5 w-3.5" />,
+  Booked: <Clock className="h-3.5 w-3.5" />,
   Maintenance: <AlertCircle className="h-3.5 w-3.5" />,
   Other: <MoreHorizontal className="h-3.5 w-3.5" />,
 };
@@ -139,11 +141,11 @@ export default function FacilitiesManagement() {
     rules: []
   });
 
-  const currentItems = facilities.filter(f => {
+  const currentItems = Array.isArray(facilities) ? facilities.filter(f => {
     const isResourceCategory = resourcesCategories.includes(f.category);
     if (activeTab === "Facilities") return !isResourceCategory;
     return isResourceCategory;
-  });
+  }) : [];
 
   const stats = [
     { label: `Total ${activeTab}`, value: currentItems.length.toString(), icon: Building2, color: "bg-blue-600" },
@@ -1035,8 +1037,8 @@ export default function FacilitiesManagement() {
                           <><Database className="h-4 w-4 opacity-50" /> <span className="text-sm font-bold">Quantity: {f.capacity}</span></>
                         )}
                       </div>
-                      <div className={`px-3 py-1.5 rounded-full border text-[9px] font-black flex items-center gap-1.5 ${statusStyles[f.status]}`}>
-                        {statusIcons[f.status]} {f.status.toUpperCase()}
+                      <div className={`px-3 py-1.5 rounded-full border text-[9px] font-black flex items-center gap-1.5 ${statusStyles[f.status] || statusStyles.Other}`}>
+                        {statusIcons[f.status] || statusIcons.Other} {(f.status || "Other").toUpperCase()}
                       </div>
                     </div>
 
@@ -1081,8 +1083,8 @@ export default function FacilitiesManagement() {
                       <td className="px-8 py-5 text-xs font-bold text-slate-500">{f.category}</td>
                       <td className="px-8 py-5 text-xs font-bold text-slate-500">{renderLocation(f.location)}</td>
                       <td className="px-8 py-5 text-center">
-                        <span className={`inline-flex px-4 py-1.5 rounded-full border text-[10px] font-black ${statusStyles[f.status]}`}>
-                          {f.status.toUpperCase()}
+                        <span className={`inline-flex px-4 py-1.5 rounded-full border text-[10px] font-black ${statusStyles[f.status] || statusStyles.Other}`}>
+                          {(f.status || "Other").toUpperCase()}
                         </span>
                       </td>
                       <td className="px-8 py-5 text-right">

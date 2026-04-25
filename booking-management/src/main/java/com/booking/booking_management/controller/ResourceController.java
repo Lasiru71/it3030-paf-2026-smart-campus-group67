@@ -30,6 +30,10 @@ public class ResourceController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public Resource createResource(@RequestBody Resource resource) {
+        // Default status if null
+        if (resource.getStatus() == null) {
+            resource.setStatus("Available");
+        }
         // Enforce rule on creation too
         if ("Maintenance".equals(resource.getStatus()) || "Booked".equals(resource.getStatus())) {
             resource.setAvailableSpaces(0);
